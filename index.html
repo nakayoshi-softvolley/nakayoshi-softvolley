@@ -128,11 +128,24 @@ select{padding:9px;border:1px solid var(--line);border-radius:9px;background:whi
 .report-summary{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
 .report-chip{padding:6px 9px;border-radius:999px;background:#f0f2f5;color:var(--text);font-size:.85rem}
 
+
+.restore-overlay{position:fixed;inset:0;z-index:9999;background:rgba(28,39,55,.48);display:flex;align-items:center;justify-content:center;padding:24px}.restore-card{width:min(420px,100%);background:#fff;border-radius:22px;padding:26px 22px;box-shadow:0 18px 50px rgba(20,34,52,.24);text-align:center}.restore-card h2{margin:0 0 10px;font-size:1.25rem}.restore-card p{margin:0 0 20px;color:#65758a;line-height:1.65}.restore-actions{display:grid;gap:10px}.save-status{font-size:.78rem;color:#8a99aa;text-align:right;margin:-2px 2px 8px}.hidden{display:none!important}
 @media(max-width:390px){.app{padding-inline:13px}.hero{margin-inline:-13px}.panel{padding:22px 16px}.band{margin:6px;padding-inline:3px;font-size:.95rem}}
 
 </style>
 </head>
 <body>
+
+<div id="restoreOverlay" class="restore-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="restoreTitle">
+  <div class="restore-card">
+    <h2 id="restoreTitle">前回の組合せがあります</h2>
+    <p id="restoreSummary">保存した組合せを続きから開けます。</p>
+    <div class="restore-actions">
+      <button id="restoreContinue" class="primary" type="button">続きから開く</button>
+      <button id="restoreNew" class="secondary" type="button">新しく始める</button>
+    </div>
+  </div>
+</div>
 <main class="app">
 <section id="input">
 <div class="hero"><h1><span>なかよし</span><span class="brand-smile" aria-hidden="true"><svg viewBox="0 0 24 24" role="img" focusable="false"><circle cx="12" cy="12" r="9.2"></circle><path d="M9.2 10.2h.01"></path><path d="M14.8 10.2h.01"></path><path d="M8.6 14.1c1 .95 2.15 1.43 3.4 1.43s2.4-.48 3.4-1.43"></path></svg></span><span>ソフトバレー</span></h1><p>チーム編成・試合組合せを公平に作成</p></div>
@@ -170,7 +183,7 @@ select{padding:9px;border:1px solid var(--line);border-radius:9px;background:whi
 <section id="result" class="hidden">
 <nav id="jump" class="jump"></nav>
 <div class="toolbar"><button id="back" class="secondary">条件を変更</button><span id="badge" class="badge"></span></div>
-<div id="resultNotice" class="result-notice hidden" role="status" aria-live="polite"></div>
+<div id="resultNotice" class="result-notice hidden" role="status" aria-live="polite"></div><div id="saveStatus" class="save-status hidden">この端末に自動保存済み</div>
 <div id="matches"></div>
 <section class="fair"><button id="fairBtn" class="fairsum"><span><b>公平性</b> <span id="stars"></span></span><span id="fairLabel"></span></button><div id="fairDetail" class="fairdetail hidden"></div></section>
 <section id="recalcPanel" class="operation-panel hidden">
@@ -229,6 +242,34 @@ select{padding:9px;border:1px solid var(--line);border-radius:9px;background:whi
 <script>
 const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
 let lastPayload=null,lastResultMeta=null,currentData=null,recalcDraft=null,resultNoticeText="";
+const SAVE_KEY="nakayoshi-softvolley-state-v1";
+function saveCurrentState(){
+ if(!currentData||!lastPayload)return;
+ try{
+  localStorage.setItem(SAVE_KEY,JSON.stringify({version:1,savedAt:Date.now(),lastPayload,lastResultMeta,currentData,resultNoticeText}));
+  const status=$("#saveStatus");
+  if(status){status.classList.remove("hidden");status.textContent="この端末に自動保存済み";}
+ }catch(e){console.warn("自動保存に失敗しました",e)}
+}
+function readSavedState(){
+ try{const raw=localStorage.getItem(SAVE_KEY);return raw?JSON.parse(raw):null}catch(e){return null}
+}
+function clearSavedState(){try{localStorage.removeItem(SAVE_KEY)}catch(e){}}
+function restoreSavedState(saved){
+ if(!saved||!saved.currentData||!saved.lastPayload)return false;
+ lastPayload=saved.lastPayload;
+ lastResultMeta=saved.lastResultMeta||null;
+ currentData=saved.currentData;
+ resultNoticeText=saved.resultNoticeText||"";
+ render(currentData,lastPayload);
+ $("#input").classList.add("hidden");
+ $("#loading").classList.add("hidden");
+ $("#result").classList.remove("hidden");
+ $("#saveStatus").classList.remove("hidden");
+ scrollTo(0,0);
+ return true;
+}
+
 const circ=n=>["","①","②","③","④","⑤","⑥","⑦","⑧","⑨","⑩","⑪","⑫","⑬","⑭","⑮","⑯","⑰","⑱","⑲","⑳"][n]||String(n);
 const label=p=>(p.sex==="m"?"男":"女")+circ(p.n);
 const key=(a,b)=>[a,b].sort().join("|");
@@ -888,7 +929,7 @@ async function run(P,context={},prefix=[]){
   }
   render(d,P);
   lastResultMeta={previousZeroRest:[...d.fair.zeroRest],previousSignature:d.fair.signature};
-  $("#loading").classList.add("hidden");$("#result").classList.remove("hidden");scrollTo(0,0);
+  $("#loading").classList.add("hidden");$("#result").classList.remove("hidden");saveCurrentState();scrollTo(0,0);
  }catch(e){
   $("#loading").classList.add("hidden");$("#result").classList.remove("hidden");
   alert(e.message);
@@ -1027,6 +1068,25 @@ $$(".recalc-tab").forEach(t=>t.onclick=()=>{
  $("#addRecalcPlayer").textContent=male?"＋ 男性を追加":"＋ 女性を追加";
 });
 $("#addRecalcPlayer").onclick=addRecalcPlayer;
+
+const savedOnLaunch=readSavedState();
+if(savedOnLaunch&&savedOnLaunch.currentData&&savedOnLaunch.lastPayload){
+ const d=new Date(savedOnLaunch.savedAt||Date.now());
+ const games=savedOnLaunch.currentData.matches?.length||savedOnLaunch.lastPayload.games||0;
+ $("#restoreSummary").textContent=`${games}試合の組合せが保存されています（${d.toLocaleString("ja-JP")}）。`;
+ $("#restoreOverlay").classList.remove("hidden");
+}
+$("#restoreContinue").onclick=()=>{
+ const saved=readSavedState();
+ $("#restoreOverlay").classList.add("hidden");
+ if(!restoreSavedState(saved)){clearSavedState();alert("保存データを読み込めませんでした。新しく作成してください。");}
+};
+$("#restoreNew").onclick=()=>{
+ clearSavedState();
+ $("#restoreOverlay").classList.add("hidden");
+ currentData=null;lastPayload=null;lastResultMeta=null;resultNoticeText="";
+ $("#result").classList.add("hidden");$("#input").classList.remove("hidden");
+};
 updateSpecial();
 </script>
 </body>
