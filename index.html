@@ -1,0 +1,1027 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#ffffff">
+<!-- Soft Volleyball v1.0 RC13: fix 3-person-team membership gap across all event participants -->
+<title>なかよしソフトバレー</title>
+<style>
+
+:root{
+  --text:#172033;--muted:#6b7280;--line:#d9dee8;--page:#f3f5f8;--surface:#fff;
+  --male:#dfeaf1;--female:#eadfe3;--rest:#eef0f2;--accent:#778899;--accent-soft:#edf1f4;
+  --danger:#b42318;--warning:#8a4b00
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--page);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif}
+button,input,select{font:inherit}
+.app{width:min(100%,680px);min-height:100dvh;margin:auto;background:var(--page);padding:0 16px max(28px,env(safe-area-inset-bottom))}
+.hero{margin:0 -16px 32px;padding:max(28px,env(safe-area-inset-top)) 20px 28px;background:var(--accent);color:white;text-align:center}
+.hero h1{font-size:1.55rem;margin:4px 0 10px;display:flex;align-items:center;justify-content:center;gap:.38rem;flex-wrap:wrap}.hero p{margin:0;color:#d8e1f0;font-size:.98rem}.brand-smile{width:1.12em;height:1.12em;display:inline-block;vertical-align:-.06em}.brand-smile svg{width:100%;height:100%;display:block}.brand-smile circle,.brand-smile path{stroke:currentColor;fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+.panel{background:var(--surface);border-radius:18px;padding:24px 20px;box-shadow:0 4px 14px rgba(27,42,69,.08)}
+.hidden{display:none!important}
+.row{display:grid;grid-template-columns:1fr minmax(130px,42%);align-items:center;gap:18px;margin:18px 0}
+.row label{font-weight:800;font-size:1.08rem;color:var(--accent)}
+.row input{width:100%;padding:13px 14px;border:2px solid #aeb9cc;border-radius:10px;text-align:center;background:white}
+.row input:focus,select:focus{outline:3px solid rgba(34,63,112,.14);border-color:var(--accent)}
+details{margin:24px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+summary{padding:16px 2px;font-weight:800;cursor:pointer;color:var(--accent)}
+.player-section{padding-top:0}
+.player-toggle-row{display:flex;align-items:center;gap:10px}
+.player-toggle-row .player-toggle{flex:1}
+.player-reset{flex:0 0 auto;padding:8px 10px;border:1px solid #c8d0dc;border-radius:9px;background:#f7f9fb;color:var(--accent);font-size:.86rem;font-weight:700;cursor:pointer}
+
+.player-toggle{width:100%;padding:16px 2px;border:0;background:transparent;text-align:left;font-weight:800;color:var(--accent);cursor:pointer}
+.player-note{display:block;margin:-8px 2px 10px}
+
+.section{padding:4px 0 18px;border-top:1px solid #edf0f4}
+.section h2{font-size:1rem;margin:16px 0 10px}
+.setting{display:flex;justify-content:space-between;align-items:center;gap:16px;padding:12px 0}
+.setting span{display:grid;gap:3px}
+small{color:var(--muted)}
+.format-history{margin:8px 0 2px;color:#8a94a3;font-size:.78rem;line-height:1.5}
+select{padding:9px;border:1px solid var(--line);border-radius:9px;background:white}
+.primary,.secondary{border:0;border-radius:11px;cursor:pointer}
+.primary{width:100%;padding:15px 18px;background:var(--accent);color:white;font-weight:800;font-size:1.05rem}
+.secondary{padding:9px 12px;background:var(--accent-soft);color:var(--accent);font-weight:700}
+.message{min-height:1.5em;color:var(--danger);font-weight:700}
+.result-notice{
+  margin:14px 0 18px;
+  padding:14px 16px;
+  border:1px solid #cbd8e5;
+  border-radius:14px;
+  background:#f7fafc;
+  color:var(--text);
+  line-height:1.65;
+}
+.result-notice strong{display:block;color:#526b82;margin-bottom:4px}
+.result-notice small{display:block;color:var(--muted)}
+
+.tabs{display:grid;grid-template-columns:1fr 1fr;border:1px solid var(--line);border-radius:10px;overflow:hidden;margin:12px 0}
+.tab{border:0;background:white;padding:11px;color:var(--text)}
+.tab[data-sex="m"].active{background:var(--male);font-weight:800;color:var(--text)}
+.tab[data-sex="f"].active{background:var(--female);font-weight:800;color:var(--text)}
+.player{padding:12px 0;border-bottom:1px solid #edf0f4}
+.player strong{display:block;margin-bottom:8px}
+.playergrid{display:grid;grid-template-columns:1fr 1fr;gap:8px 14px}
+.playergrid label{display:grid;gap:4px;color:var(--muted);font-size:.9rem}
+.check{display:flex!important;grid-column:1/-1;align-items:center;gap:8px;color:var(--text)!important}
+.loading{min-height:75dvh;display:grid;place-content:center;text-align:center}
+.spinner{width:48px;height:48px;margin:0 auto 18px;border:5px solid #dfe6ef;border-top-color:var(--accent);border-radius:50%;animation:spin .9s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.jump{position:sticky;top:0;z-index:10;display:flex;gap:8px;overflow-x:auto;padding:10px 0;background:rgba(243,245,248,.96);border-bottom:1px solid var(--line)}
+.jump button{flex:0 0 auto;min-width:42px;height:34px;padding:0 10px;border:1px solid #b7c1d0;border-radius:6px;background:#edf1f6;color:var(--accent);font-weight:800;box-shadow:0 2px 0 rgba(34,63,112,.08)}
+.toolbar{display:flex;justify-content:space-between;align-items:center;margin:14px 0 8px}
+.badge{padding:6px 10px;background:var(--accent-soft);border-radius:999px;font-size:.85rem;font-weight:700;color:var(--accent)}
+.match{scroll-margin-top:60px;margin:24px 0 34px;background:white;border-radius:16px;padding:16px;box-shadow:0 3px 12px rgba(27,42,69,.06)}
+.match h2{text-align:center;margin:-16px -16px 18px;padding:13px 0;background:var(--accent);color:white;border-radius:16px 16px 0 0;font-size:1.25rem}
+.court{margin:16px 0}
+.court>p{margin:0 0 7px;font-size:.92rem;font-weight:700;color:var(--accent)}
+.teams{display:grid;grid-template-columns:1fr 1fr;border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.team+.team{border-left:1px solid var(--line)}
+.teamname{text-align:center;font-size:.9rem;font-weight:700;padding:8px;border-bottom:1px solid var(--line);color:var(--accent)}
+.band{margin:8px;padding:8px 6px;border-radius:7px;text-align:center;white-space:nowrap}
+.sex-prefix{margin-right:.12em;color:#687789;font-weight:500}
+.player-numbers{font-weight:600;letter-spacing:.045em}
+.rest .sex-prefix{margin-right:.12em}
+.rest .player-numbers{font-weight:400;letter-spacing:.045em}
+.male{background:var(--male)}.female{background:var(--female)}.empty{background:#f8f9fb;color:var(--muted)}
+.rest{margin-top:10px;padding:10px 12px;border-radius:9px;background:var(--rest)}
+.rest-warning{display:block;margin-top:5px;color:var(--warning);font-size:.86rem;font-weight:700}
+.fair{margin:10px 0 18px;border:1px solid var(--line);border-radius:12px;overflow:hidden;background:white}
+.fairsum{width:100%;border:0;padding:14px;background:white;display:flex;justify-content:space-between;text-align:left}
+.fairdetail{padding:0 14px 14px;border-top:1px solid #edf0f4}
+.fairdetail dl{display:grid;grid-template-columns:1fr auto;gap:8px 16px}
+.fairdetail dt,.fairdetail dd{margin:0}
+.warn{color:var(--warning)}
+.bottom-actions{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:10px 0 0}
+.bottom-actions .secondary{padding:12px 6px;white-space:nowrap;font-size:.94rem}
+@media(max-width:360px){.bottom-actions{gap:6px}.bottom-actions .secondary{font-size:.86rem;padding-inline:4px}}
+.operation-panel{margin:4px 0 18px;padding:16px;background:white;border:1px solid var(--line);border-radius:14px;box-shadow:0 3px 10px rgba(27,42,69,.05)}
+.operation-panel h2{margin:0 0 12px;font-size:1.05rem;color:var(--accent)}
+.operation-panel h3{margin:14px 0 8px;font-size:.98rem;color:var(--accent)}
+.operation-row{display:grid;grid-template-columns:1fr minmax(120px,42%);align-items:center;gap:12px;margin:12px 0}
+.operation-row input,.operation-row select{width:100%;padding:10px;border:1px solid var(--line);border-radius:9px;background:white}
+.operation-actions{display:flex;gap:9px;margin-top:14px}
+.operation-actions .primary{flex:1}
+.operation-actions .secondary{flex:0 0 auto}
+.recalc-player{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid #edf0f4}
+.recalc-player>input{width:22px;height:22px}
+.recalc-player select{min-width:94px}
+.add-player-button{width:100%;margin-top:12px;padding:11px;border:1px dashed #aeb9c7;border-radius:10px;background:#f8fafc;color:var(--accent);font-weight:800}
+.operation-note{margin:8px 0;color:var(--muted);font-size:.9rem}
+
+.more-toggle{width:100%;margin-top:12px;padding:11px 0;border:0;border-top:1px solid #edf0f4;background:transparent;color:var(--accent);font-weight:800;text-align:left;cursor:pointer}
+.deep-detail{padding-top:8px}
+.report-section{margin-top:16px}
+.report-section h3{margin:0 0 8px;font-size:1rem;color:var(--accent)}
+.report-table{width:100%;border-collapse:collapse;font-size:.92rem;background:white}
+.report-table th,.report-table td{border:1px solid #cfd7e2;padding:8px 6px;text-align:center}
+.report-table th{background:var(--accent);color:white;font-weight:800}
+.report-summary{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
+.report-chip{padding:6px 9px;border-radius:999px;background:#f0f2f5;color:var(--text);font-size:.85rem}
+
+@media(max-width:390px){.app{padding-inline:13px}.hero{margin-inline:-13px}.panel{padding:22px 16px}.band{margin:6px;padding-inline:3px;font-size:.95rem}}
+
+</style>
+</head>
+<body>
+<main class="app">
+<section id="input">
+<div class="hero"><h1><span>なかよし</span><span class="brand-smile" aria-hidden="true"><svg viewBox="0 0 24 24" role="img" focusable="false"><circle cx="12" cy="12" r="9.2"></circle><path d="M9.2 10.2h.01"></path><path d="M14.8 10.2h.01"></path><path d="M8.6 14.1c1 .95 2.15 1.43 3.4 1.43s2.4-.48 3.4-1.43"></path></svg></span><span>ソフトバレー</span></h1><p>チーム編成・試合組合せを公平に作成</p></div>
+<div class="panel">
+<div class="row"><label for="mc">男性</label><input id="mc" type="number" inputmode="numeric" min="4" max="30" placeholder="人数"></div>
+<div class="row"><label for="fc">女性</label><input id="fc" type="number" inputmode="numeric" min="4" max="30" placeholder="人数"></div>
+<div class="row"><label for="gc">試合数</label><input id="gc" type="number" inputmode="numeric" min="1" max="30" placeholder="試合数"></div>
+
+<details>
+<summary>詳細設定</summary>
+<div class="section">
+<h2>開催設定</h2>
+<label class="setting"><span><b>4対3開催</b><small id="fourNote">男8・女7または男7・女8の場合のみ</small></span><input id="four" type="checkbox"></label>
+<label class="setting"><span><b>固定チーム</b><small>最大2チーム・毎試合出場</small></span>
+<select id="fixed"><option value="0">なし</option><option value="1">1チーム</option><option value="2">2チーム</option></select></label>
+</div>
+<div class="section player-section">
+<div class="player-toggle-row">
+  <button id="playersBtn" class="player-toggle" type="button">▶ プレイヤー設定</button>
+  <button id="playerReset" class="player-reset hidden" type="button">リセット</button>
+</div>
+<div id="playersWrap" class="hidden">
+<div class="tabs"><button class="tab active" data-sex="m" type="button">男性</button><button class="tab" data-sex="f" type="button">女性</button></div>
+<div id="mplayers"></div><div id="fplayers" class="hidden"></div>
+</div>
+</div>
+</details>
+<p id="msg" class="message"></p>
+<button id="create" class="primary">組み合わせ作成</button>
+</div>
+</section>
+
+<section id="loading" class="loading hidden"><div><div class="spinner"></div><h2>組み合わせを作成中…</h2><p>公平な組み合わせを探索しています。<br>通常は5秒ほどで完了します。</p></div></section>
+
+<section id="result" class="hidden">
+<nav id="jump" class="jump"></nav>
+<div class="toolbar"><button id="back" class="secondary">条件を変更</button><span id="badge" class="badge"></span></div>
+<div id="resultNotice" class="result-notice hidden" role="status" aria-live="polite"></div>
+<div id="matches"></div>
+<section class="fair"><button id="fairBtn" class="fairsum"><span><b>公平性</b> <span id="stars"></span></span><span id="fairLabel"></span></button><div id="fairDetail" class="fairdetail hidden"></div></section>
+<section id="recalcPanel" class="operation-panel hidden">
+  <div id="recalcStep1">
+    <h2>再計算</h2>
+    <div class="operation-row">
+      <label for="recalcStart">どこから再計算しますか？</label>
+      <select id="recalcStart"></select>
+    </div>
+    <p class="operation-note">選択した試合より前は変更せず、履歴を引き継ぎます。</p>
+    <div class="operation-actions">
+      <button id="closeRecalc1" class="secondary" type="button">キャンセル</button>
+      <button id="nextRecalc" class="primary" type="button">参加者を変更</button>
+    </div>
+  </div>
+  <div id="recalcStep2" class="hidden">
+    <h2 id="recalcTitle">第○試合から再計算</h2>
+    <div class="tabs">
+      <button type="button" class="tab recalc-tab active" data-sex="m">男性</button>
+      <button type="button" class="tab recalc-tab" data-sex="f">女性</button>
+    </div>
+    <div id="recalcMaleList"></div>
+    <div id="recalcFemaleList" class="hidden"></div>
+    <button id="addRecalcPlayer" class="add-player-button" type="button">＋ 男性を追加</button>
+    <p class="operation-note">チェックを外すと途中退場、追加した人は途中参加として扱います。途中参加者は最初の対象試合で優先出場します。</p>
+    <div class="operation-actions">
+      <button id="backRecalc" class="secondary" type="button">戻る</button>
+      <button id="executeRecalc" class="primary" type="button">再計算する</button>
+    </div>
+  </div>
+</section>
+
+<section id="addPanel" class="operation-panel hidden">
+  <h2>試合を追加</h2>
+  <div class="operation-row">
+    <label for="addCount">追加する試合数</label>
+    <input id="addCount" type="number" inputmode="numeric" min="1" max="20" placeholder="試合数">
+  </div>
+  <p class="operation-note">現在の参加者と、これまでの味方・対戦・休憩履歴を引き継ぎます。</p>
+  <div class="operation-actions">
+    <button id="closeAdd" class="secondary" type="button">キャンセル</button>
+    <button id="executeAdd" class="primary" type="button">追加する</button>
+  </div>
+</section>
+
+
+<button id="again" class="primary">同じ条件でもう一度作成</button>
+<div class="bottom-actions">
+  <button id="bottomBack" class="secondary" type="button">条件変更</button>
+  <button id="recalcButton" class="secondary" type="button">再計算</button>
+  <button id="addButton" class="secondary" type="button">試合追加</button>
+</div>
+</section>
+</main>
+
+<script>
+const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
+let lastPayload=null,lastResultMeta=null,currentData=null,recalcDraft=null,resultNoticeText="";
+const circ=n=>["","①","②","③","④","⑤","⑥","⑦","⑧","⑨","⑩","⑪","⑫","⑬","⑭","⑮","⑯","⑰","⑱","⑲","⑳"][n]||String(n);
+const label=p=>(p.sex==="m"?"男":"女")+circ(p.n);
+const key=(a,b)=>[a,b].sort().join("|");
+function counts(){return {m:+$("#mc").value,f:+$("#fc").value,g:+$("#gc").value}}
+function updateSpecial(){
+ const {m,f}=counts(), four=$("#four"), fixed=$("#fixed"), valid=(m===8&&f===7)||(m===7&&f===8);
+ four.disabled=!valid||fixed.value!=="0"; if(four.disabled) four.checked=false;
+ fixed.disabled=four.checked;
+ $("#fourNote").textContent=valid?(fixed.value!=="0"?"固定チーム開催中は選択できません":"この人数では利用できます"):"男8・女7または男7・女8の場合のみ";
+}
+["#mc","#fc","#gc"].forEach(s=>{
+ const el=$(s);
+ el.addEventListener("input",()=>{
+  updateSpecial();
+  if(!$("#playersWrap").classList.contains("hidden") && ($("#mc").value && $("#fc").value)) rebuildPlayers(true);
+ });
+ const selectAll=()=>setTimeout(()=>{try{el.select()}catch(_e){}},0);
+ el.addEventListener("focus",selectAll);
+ el.addEventListener("click",selectAll);
+});
+$("#four").addEventListener("change",updateSpecial);$("#fixed").addEventListener("change",updateSpecial);
+
+function playerCard(sex,n){
+ const k=sex+n,p=sex==="m"?"男":"女";
+ return `<div class="player" data-key="${k}" data-sex="${sex}" data-n="${n}"><strong>${p}${circ(n)}</strong><div class="playergrid">
+ <label class="check"><input class="no3" type="checkbox">3人チーム不可</label>
+ <label class="check"><input class="nofixed" type="checkbox">固定チーム対戦不可</label>
+ </div></div>`;
+}
+function currentPlayerSettings(){
+ const map={};
+ $$(".player").forEach(c=>map[c.dataset.key]={
+  no3:c.querySelector(".no3").checked,
+  nofixed:c.querySelector(".nofixed").checked
+ });
+ return map;
+}
+function rebuildPlayers(preserve=true){
+ const {m,f}=counts(),saved=preserve?currentPlayerSettings():{};
+ if(!m||!f){$("#msg").textContent="先に男性人数と女性人数を入力してください。";return false}
+ $("#msg").textContent="";
+ $("#mplayers").innerHTML=Array.from({length:m},(_,i)=>playerCard("m",i+1)).join("");
+ $("#fplayers").innerHTML=Array.from({length:f},(_,i)=>playerCard("f",i+1)).join("");
+ $$(".player").forEach(c=>{
+  const s=saved[c.dataset.key]; if(!s)return;
+  c.querySelector(".no3").checked=s.no3;
+  c.querySelector(".nofixed").checked=s.nofixed;
+ });
+ return true;
+}
+$("#playersBtn").onclick=()=>{
+ const wrap=$("#playersWrap");
+ if(!wrap.classList.contains("hidden")){
+  wrap.classList.add("hidden");
+  $("#playersBtn").textContent="▶ プレイヤー設定";
+  $("#playerReset").classList.add("hidden");
+  return;
+ }
+ if(rebuildPlayers(true)){
+  wrap.classList.remove("hidden");
+  $("#playersBtn").textContent="▼ プレイヤー設定";
+  $("#playerReset").classList.remove("hidden");
+ }
+};
+$$(".tab").forEach(t=>t.onclick=()=>{$$(".tab").forEach(x=>x.classList.remove("active"));t.classList.add("active");let male=t.dataset.sex==="m";$("#mplayers").classList.toggle("hidden",!male);$("#fplayers").classList.toggle("hidden",male)});
+
+function collectPlayers(){
+ const {m,f}=counts(), map={};
+ $$(".player").forEach(c=>map[c.dataset.key]={no3:c.querySelector(".no3").checked,nofixed:c.querySelector(".nofixed").checked});
+ let out=[];for(let i=1;i<=m;i++)out.push({id:"m"+i,sex:"m",n:i,level:"normal",...(map["m"+i]||{no3:false,nofixed:false})});
+ for(let i=1;i<=f;i++)out.push({id:"f"+i,sex:"f",n:i,level:"normal",...(map["f"+i]||{no3:false,nofixed:false})});return out;
+}
+function sample(a,n){let b=[...a];for(let i=b.length-1;i>0;i--){let j=Math.floor(Math.random()*(i+1));[b[i],b[j]]=[b[j],b[i]]}return b.slice(0,n)}
+function team(name,ms=[],fs=[],fixed=false){return {name,ms,fs,fixed}}
+
+function makeRestPlan(players,games,activeCount,context={}){
+ const restPerRound=players.length-activeCount;
+ if(restPerRound<=0)return Array.from({length:games},()=>[]);
+ const total=restPerRound*games;
+ const base=Math.floor(total/players.length),extra=total%players.length;
+ let best=null,bestPenalty=Infinity;
+
+ for(let attempt=0;attempt<90;attempt++){
+  const shuffled=sample(players,players.length);
+  const target={};
+  players.forEach(p=>target[p.id]=base);
+  shuffled.slice(0,extra).forEach(p=>target[p.id]++);
+  const remaining={...target};
+  const plan=[];
+  let previous=new Set(context.initialRest||[]);
+  let valid=true;
+
+  for(let r=0;r<games;r++){
+   const chosen=[];
+   const futureRounds=games-r-1;
+   const mandatory=players.filter(p=>remaining[p.id]>futureRounds);
+   if(mandatory.length>restPerRound){valid=false;break}
+   mandatory.forEach(p=>chosen.push(p));
+
+   while(chosen.length<restPerRound){
+    const candidates=players.filter(p=>remaining[p.id]>0&&!chosen.some(x=>x.id===p.id));
+    if(!candidates.length){valid=false;break}
+    candidates.sort((a,b)=>{
+     const score=p=>{
+      let s=0;
+      if(previous.has(p.id))s+=100000;
+      if(r===0&&(context.priorityJoin||[]).includes(p.id))s+=50000;
+      if(r===0&&(context.initialRest||[]).includes(p.id))s+=100000;
+      s-=remaining[p.id]*900;
+      s+=Math.random()*80;
+      return s;
+     };
+     return score(a)-score(b);
+    });
+    chosen.push(candidates[0]);
+   }
+   if(!valid)break;
+   chosen.forEach(p=>remaining[p.id]--);
+   plan.push(chosen);
+   previous=new Set(chosen.map(p=>p.id));
+  }
+
+  if(!valid||Object.values(remaining).some(v=>v!==0))continue;
+
+  let penalty=0;
+  const seq={};
+  players.forEach(p=>seq[p.id]=[]);
+  plan.forEach(rests=>{
+   const ids=new Set(rests.map(p=>p.id));
+   players.forEach(p=>seq[p.id].push(ids.has(p.id)?1:0));
+  });
+  players.forEach(p=>{
+   for(let i=1;i<games;i++)if(seq[p.id][i]&&seq[p.id][i-1])penalty+=10000;
+   if(seq[p.id][0]&&(context.initialRest||[]).includes(p.id))penalty+=10000;
+   if(seq[p.id][0]&&(context.priorityJoin||[]).includes(p.id))penalty+=2500;
+   const positions=seq[p.id].map((v,i)=>v?i:-1).filter(i=>i>=0);
+   for(let i=1;i<positions.length;i++){
+    const gap=positions[i]-positions[i-1];
+    penalty+=Math.max(0,3-gap)*20;
+   }
+  });
+  penalty+=Math.random();
+
+  if(penalty<bestPenalty){bestPenalty=penalty;best=plan}
+ }
+ if(best)return best;
+
+ // Fallback: exact count fairness first, even if perfect spacing is impossible.
+ const counts={};players.forEach(p=>counts[p.id]=0);
+ return Array.from({length:games},(_x,r)=>{
+  const rests=[...players].sort((a,b)=>counts[a.id]-counts[b.id]+Math.random()-.5).slice(0,restPerRound);
+  rests.forEach(p=>counts[p.id]++);
+  return rests;
+ });
+}
+
+
+function makeShortTeamPlan(players,games,slots,context={}){
+ const eligible=players.filter(p=>!p.no3);
+ if(eligible.length<slots)return null;
+ const history={};
+ eligible.forEach(p=>history[p.id]=(context.shortHistory&&context.shortHistory[p.id])||0);
+ const initial=new Set(context.initialShort||[]);
+ let best=null,bestPenalty=Infinity;
+ for(let attempt=0;attempt<1800;attempt++){
+  const counts={...history}, plan=[];
+  let previous=new Set(initial),ok=true;
+  for(let r=0;r<games;r++){
+   const chosen=[];
+   for(let k=0;k<slots;k++){
+    const candidates=eligible.filter(p=>!chosen.some(x=>x.id===p.id));
+    if(!candidates.length){ok=false;break}
+    candidates.sort((a,b)=>{
+     const sa=counts[a.id]*1000+(previous.has(a.id)?7000:0)+Math.random()*140;
+     const sb=counts[b.id]*1000+(previous.has(b.id)?7000:0)+Math.random()*140;
+     return sa-sb;
+    });
+    chosen.push(candidates[0]);
+   }
+   if(!ok)break;
+   chosen.forEach(p=>counts[p.id]++);
+   plan.push(chosen);
+   previous=new Set(chosen.map(p=>p.id));
+  }
+  if(!ok)continue;
+  const vals=eligible.map(p=>counts[p.id]);
+  const gap=Math.max(...vals)-Math.min(...vals);
+  let penalty=gap*gap*100000+variance(vals)*20000;
+  let prev=new Set(initial);
+  for(const round of plan){
+   for(const p of round)if(prev.has(p.id))penalty+=50000;
+   prev=new Set(round.map(p=>p.id));
+  }
+  penalty+=Math.random();
+  if(penalty<bestPenalty){bestPenalty=penalty;best=plan}
+  if(gap<=1&&penalty<50000)break;
+ }
+ return best;
+}
+
+function makeCandidate(P,context={}){
+ const males=P.players.filter(p=>p.sex==="m"), females=P.players.filter(p=>p.sex==="f"), matches=[];
+ let activeM=0,activeF=0,restPlanM=null,restPlanF=null,shortPlanM=null,shortPlanF=null;
+ if(P.four){
+  const sm=males.length===8?2:1,sf=females.length===7?1:2;
+  shortPlanM=makeShortTeamPlan(males,P.games,sm,context);
+  shortPlanF=makeShortTeamPlan(females,P.games,sf,context);
+  if(!shortPlanM||!shortPlanF)return null;
+ }
+ if(!P.four){
+  if(P.fixed===0){
+   const tc=(males.length>=8&&females.length>=8)?4:2;
+   activeM=tc*2;activeF=tc*2;
+  }else if(P.fixed===1){
+   activeM=6;activeF=6;
+  }else{
+   activeM=4;activeF=4;
+  }
+  restPlanM=makeRestPlan(males,P.games,activeM,context);
+  restPlanF=makeRestPlan(females,P.games,activeF,context);
+ }
+ for(let r=0;r<P.games;r++){
+  let courts=[],restM=[],restF=[];
+  if(P.four){
+   let shortM=shortPlanM[r],shortF=shortPlanF[r],rm=males.filter(p=>!shortM.some(x=>x.id===p.id)),rf=females.filter(p=>!shortF.some(x=>x.id===p.id)),ts=[];
+   rm=sample(rm,rm.length);rf=sample(rf,rf.length);for(let i=0;i<3;i++)ts.push(team(String.fromCharCode(65+i),rm.slice(i*2,i*2+2),rf.slice(i*2,i*2+2)));
+   ts.push(team("D",shortM,shortF));ts=sample(ts,4);courts=[{name:"Aコート",a:ts[0],b:ts[1]},{name:"Bコート",a:ts[2],b:ts[3]}];
+  } else if(P.fixed===0){
+   let tc=(males.length>=8&&females.length>=8)?4:2;
+   restM=restPlanM[r];restF=restPlanF[r];
+   let am=sample(males.filter(p=>!restM.some(x=>x.id===p.id)),activeM);
+   let af=sample(females.filter(p=>!restF.some(x=>x.id===p.id)),activeF);
+   let ts=[];for(let i=0;i<tc;i++)ts.push(team(String.fromCharCode(65+i),am.slice(i*2,i*2+2),af.slice(i*2,i*2+2)));ts=sample(ts,tc);
+   courts=tc===2?[{name:"Aコート",a:ts[0],b:ts[1]}]:[{name:"Aコート",a:ts[0],b:ts[1]},{name:"Bコート",a:ts[2],b:ts[3]}];
+  } else if(P.fixed===1){
+   restM=restPlanM[r];restF=restPlanF[r];
+   let am=sample(males.filter(p=>!restM.some(x=>x.id===p.id)),activeM);
+   let af=sample(females.filter(p=>!restF.some(x=>x.id===p.id)),activeF);
+   let ts=[];for(let i=0;i<3;i++)ts.push(team(String.fromCharCode(65+i),am.slice(i*2,i*2+2),af.slice(i*2,i*2+2)));
+   let x=Math.floor(Math.random()*3),opp=ts[x],rem=sample(ts.filter((_,i)=>i!==x),2);courts=[{name:"Aコート",a:opp,b:team("D（固定）",[],[],true)},{name:"Bコート",a:rem[0],b:rem[1]}];
+  } else {
+   restM=restPlanM[r];restF=restPlanF[r];
+   let am=sample(males.filter(p=>!restM.some(x=>x.id===p.id)),activeM);
+   let af=sample(females.filter(p=>!restF.some(x=>x.id===p.id)),activeF);
+   let A=team("A",am.slice(0,2),af.slice(0,2)),B=team("B",am.slice(2),af.slice(2)),C=team("C（固定）",[],[],true),D=team("D（固定）",[],[],true),pat=Math.floor(Math.random()*3);
+   courts=pat===0?[{name:"Aコート",a:A,b:C},{name:"Bコート",a:B,b:D}]:pat===1?[{name:"Aコート",a:A,b:B},{name:"Bコート",a:C,b:D}]:[{name:"Aコート",a:A,b:D},{name:"Bコート",a:B,b:C}];
+  }
+  matches.push({n:r+1,courts,restM,restF});
+ }
+ return matches;
+}
+function variance(a){if(!a.length)return 0;let m=a.reduce((s,x)=>s+x,0)/a.length;return a.reduce((s,x)=>s+(x-m)**2,0)/a.length}
+function scheduleSignature(matches){
+ return matches.map(M=>M.courts.map(c=>{
+  const side=t=>[...t.ms,...t.fs].map(p=>p.id).sort().join(",");
+  return [side(c.a),side(c.b)].sort().join("::");
+ }).sort().join("||")).join("###");
+}
+function extractHistory(matches){
+ const mateHistory={},oppHistory={},exactTeamsHistory={},exactCardsHistory={},fixedHistory={},shortHistory={};
+ for(const M of matches){
+  for(const c of M.courts){
+   const L=[...c.a.ms,...c.a.fs],R=[...c.b.ms,...c.b.fs];
+   for(let i=0;i<L.length;i++)for(let j=i+1;j<L.length;j++)mateHistory[key(L[i].id,L[j].id)]=(mateHistory[key(L[i].id,L[j].id)]||0)+1;
+   for(let i=0;i<R.length;i++)for(let j=i+1;j<R.length;j++)mateHistory[key(R[i].id,R[j].id)]=(mateHistory[key(R[i].id,R[j].id)]||0)+1;
+   L.forEach(a=>R.forEach(b=>oppHistory[key(a.id,b.id)]=(oppHistory[key(a.id,b.id)]||0)+1));
+   if(c.a.fixed)R.forEach(p=>fixedHistory[p.id]=(fixedHistory[p.id]||0)+1);
+   if(c.b.fixed)L.forEach(p=>fixedHistory[p.id]=(fixedHistory[p.id]||0)+1);
+   if(L.length===3)L.forEach(p=>shortHistory[p.id]=(shortHistory[p.id]||0)+1);
+   if(R.length===3)R.forEach(p=>shortHistory[p.id]=(shortHistory[p.id]||0)+1);
+   const left=L.map(p=>p.id).sort(),right=R.map(p=>p.id).sort();
+   if(left.length===4){const k=left.join(",");exactTeamsHistory[k]=(exactTeamsHistory[k]||0)+1}
+   if(right.length===4){const k=right.join(",");exactTeamsHistory[k]=(exactTeamsHistory[k]||0)+1}
+   if(left.length&&right.length){const k=[left.join(","),right.join(",")].sort().join("::");exactCardsHistory[k]=(exactCardsHistory[k]||0)+1}
+  }
+ }
+ const last=matches[matches.length-1];
+ const initialRest=last?[...last.restM,...last.restF].map(p=>p.id):[];
+ const initialFixed=[],initialShort=[];
+ if(last){
+  for(const c of last.courts){
+   if(c.a.fixed)[...c.b.ms,...c.b.fs].forEach(p=>initialFixed.push(p.id));
+   if(c.b.fixed)[...c.a.ms,...c.a.fs].forEach(p=>initialFixed.push(p.id));
+   const L=[...c.a.ms,...c.a.fs],R=[...c.b.ms,...c.b.fs];
+   if(L.length===3)L.forEach(p=>initialShort.push(p.id));
+   if(R.length===3)R.forEach(p=>initialShort.push(p.id));
+  }
+ }
+ return {mateHistory,oppHistory,exactTeamsHistory,exactCardsHistory,fixedHistory,shortHistory,initialRest,initialFixed,initialShort};
+}
+function score(P,matches,context={}){
+ let app={},seq={},mate={...(context.mateHistory||{})},opp={...(context.oppHistory||{})},fixed={...(context.fixedHistory||{})},fseq={},short={},sseq={},shortOpp={};P.players.forEach(p=>{app[p.id]=0;seq[p.id]=[];fixed[p.id]=fixed[p.id]||0;fseq[p.id]=[];short[p.id]=(context.shortHistory&&context.shortHistory[p.id])||0;sseq[p.id]=[];shortOpp[p.id]=0});
+ let penalty=0;
+ for(const M of matches){
+  let active=new Set,facing=new Set,shortSet=new Set,shortOppSet=new Set;
+  for(const c of M.courts){
+   let L=[...c.a.ms,...c.a.fs],R=[...c.b.ms,...c.b.fs];L.forEach(p=>active.add(p.id));R.forEach(p=>active.add(p.id));
+   for(let i=0;i<L.length;i++)for(let j=i+1;j<L.length;j++)mate[key(L[i].id,L[j].id)]=(mate[key(L[i].id,L[j].id)]||0)+1;
+   for(let i=0;i<R.length;i++)for(let j=i+1;j<R.length;j++)mate[key(R[i].id,R[j].id)]=(mate[key(R[i].id,R[j].id)]||0)+1;
+   L.forEach(a=>R.forEach(b=>opp[key(a.id,b.id)]=(opp[key(a.id,b.id)]||0)+1));
+   if(c.a.fixed)R.forEach(p=>facing.add(p.id));if(c.b.fixed)L.forEach(p=>facing.add(p.id));
+   if(P.four){if(L.length===3){L.forEach(p=>shortSet.add(p.id));R.forEach(p=>shortOppSet.add(p.id))}if(R.length===3){R.forEach(p=>shortSet.add(p.id));L.forEach(p=>shortOppSet.add(p.id))}}
+  }
+  for(const p of P.players){
+   let a=active.has(p.id)?1:0;app[p.id]+=a;seq[p.id].push(a);let fx=facing.has(p.id)?1:0;fixed[p.id]+=fx;fseq[p.id].push(fx);let sh=shortSet.has(p.id)?1:0;short[p.id]+=sh;sseq[p.id].push(sh);if(shortOppSet.has(p.id))shortOpp[p.id]++;
+   if(p.nofixed&&fx)return null;
+  }
+ }
+ for(const sex of ["m","f"]){
+  let ids=P.players.filter(p=>p.sex===sex).map(p=>p.id),v=ids.map(id=>app[id]);
+  penalty+=variance(v)*900;
+  penalty+=(Math.max(...v)-Math.min(...v))**2*1600;
+ }
+ for(const p of P.players){
+  let run=0,last=null,trans=0;
+  seq[p.id].forEach(v=>{
+   if(last!==null&&v!==last)trans++;
+   last=v;
+   if(v===0){
+    run++;
+    if(run>=2) penalty+=5200*(run-1)**2;
+   }else run=0;
+  });
+  penalty+=Math.max(0,seq[p.id].length-1-trans)*70;
+  if(seq[p.id][0]===0 && (context.initialRest||[]).includes(p.id)) penalty+=5200;
+  if(seq[p.id][0]===0 && (context.priorityJoin||[]).includes(p.id)) penalty+=1100;
+ }
+ const mateCounts=Object.values(mate),oppCounts=Object.values(opp);
+ mateCounts.forEach(c=>{ if(c>1) penalty+=(c-1)**2*18; });
+ oppCounts.forEach(c=>{ if(c>1) penalty+=(c-1)**2*7; });
+ const maxMate=Math.max(0,...mateCounts),maxOpp=Math.max(0,...oppCounts);
+
+ // Exact 4-person team repetition and exact team-vs-team card repetition.
+ const exactTeams={...(context.exactTeamsHistory||{})}, exactCards={...(context.exactCardsHistory||{})};
+ for(const M of matches){
+  for(const c of M.courts){
+   const left=[...c.a.ms,...c.a.fs].map(p=>p.id).sort();
+   const right=[...c.b.ms,...c.b.fs].map(p=>p.id).sort();
+   if(left.length===4){
+    const tk=left.join(",");
+    exactTeams[tk]=(exactTeams[tk]||0)+1;
+   }
+   if(right.length===4){
+    const tk=right.join(",");
+    exactTeams[tk]=(exactTeams[tk]||0)+1;
+   }
+   if(left.length&&right.length){
+    const lk=left.join(","), rk=right.join(",");
+    const ck=[lk,rk].sort().join("::");
+    exactCards[ck]=(exactCards[ck]||0)+1;
+   }
+  }
+ }
+ Object.values(exactTeams).forEach(c=>{ if(c>1) penalty+=(c-1)**2*160; });
+ Object.values(exactCards).forEach(c=>{ if(c>1) penalty+=(c-1)**2*120; });
+ const maxExactTeam=Math.max(0,...Object.values(exactTeams));
+ const maxExactCard=Math.max(0,...Object.values(exactCards));
+
+ const zeroRest=P.players.filter(p=>app[p.id]===P.games).map(p=>p.id);
+ const sig=scheduleSignature(matches);
+ if(context.previousZeroRest){
+  zeroRest.forEach(id=>{if(context.previousZeroRest.includes(id)) penalty+=90;});
+ }
+ if(context.previousSignature===sig) penalty+=500;
+ if(P.fixed){
+  let hasFixedConsecutive=false;
+  for(const sex of ["m","f"]){
+   let ids=P.players.filter(p=>p.sex===sex).map(p=>p.id),v=ids.map(id=>fixed[id]);
+   penalty+=variance(v)*900+(Math.max(...v)-Math.min(...v))**2*2600;
+  }
+  for(const p of P.players){
+   if(fseq[p.id][0]&&(context.initialFixed||[]).includes(p.id)){
+    hasFixedConsecutive=true;
+    penalty+=7000;
+   }
+   for(let i=1;i<fseq[p.id].length;i++){
+    if(fseq[p.id][i]&&fseq[p.id][i-1]){
+     hasFixedConsecutive=true;
+     penalty+=7000;
+    }
+   }
+  }
+  if(context.strictFixedNoConsecutive&&hasFixedConsecutive)return null;
+ }
+ if(P.four){for(const sex of ["m","f"]){let ids=P.players.filter(p=>p.sex===sex&&!p.no3).map(p=>p.id),v=ids.map(id=>short[id]);if(v.length&&Math.max(...v)-Math.min(...v)>1)return null;penalty+=variance(v)*1800+(Math.max(...v)-Math.min(...v))**2*5200;penalty+=variance(ids.map(id=>shortOpp[id]))*90}
+  for(const p of P.players){if((context.initialShort||[]).includes(p.id)&&sseq[p.id][0])penalty+=7000;for(let i=1;i<sseq[p.id].length;i++)if(sseq[p.id][i]&&sseq[p.id][i-1])penalty+=7000;if(p.no3&&short[p.id])return null}
+ }
+ let raw=Math.max(0,100-penalty/Math.max(1,P.games*P.players.length)*.055),stars=raw>=92?5:raw>=80?4:raw>=65?3:raw>=45?2:1,gap=0;
+ for(const sex of ["m","f"]){let v=P.players.filter(p=>p.sex===sex).map(p=>app[p.id]);gap=Math.max(gap,Math.max(...v)-Math.min(...v))}
+ let cons=0;P.players.forEach(p=>{for(let i=1;i<seq[p.id].length;i++)if(seq[p.id][i]===0&&seq[p.id][i-1]===0)cons++});
+ const appearances={m:{},f:{}},rests={m:{},f:{}};
+ for(const p of P.players){
+  appearances[p.sex][p.id]=app[p.id];
+  rests[p.sex][p.id]=P.games-app[p.id];
+ }
+ const teammateBySex={m:[],f:[]},opponentBySex={m:[],f:[]};
+ const fixedValues={m:[],f:[]};
+ let fixedCons=0;
+ for(const p of P.players){
+  fixedValues[p.sex].push(fixed[p.id]||0);
+  if(fseq[p.id][0]&&(context.initialFixed||[]).includes(p.id))fixedCons++;
+  for(let i=1;i<fseq[p.id].length;i++)if(fseq[p.id][i]&&fseq[p.id][i-1])fixedCons++;
+ }
+ for(const p of P.players){
+  for(const q of P.players){
+   if(p.id>=q.id||p.sex!==q.sex) continue;
+   teammateBySex[p.sex].push(mate[key(p.id,q.id)]||0);
+   opponentBySex[p.sex].push(opp[key(p.id,q.id)]||0);
+  }
+ }
+ const range=a=>({min:a.length?Math.min(...a):0,max:a.length?Math.max(...a):0});
+ return {
+  penalty,raw:Math.round(raw),stars,
+  label:stars===5?"非常に公平":stars===4?"良好":stars===3?"おおむね公平":"偏りあり",
+  gap,cons,maxMate,maxOpp,maxExactTeam,maxExactCard,
+  zeroRest,signature:sig,
+  appearances,rests,
+  teammateRange:{m:range(teammateBySex.m),f:range(teammateBySex.f)},
+  opponentRange:{m:range(opponentBySex.m),f:range(opponentBySex.f)},
+  fixedCounts:{...fixed},
+  fixedRange:{m:range(fixedValues.m),f:range(fixedValues.f)},
+  fixedGap:Math.max(
+   fixedValues.m.length?Math.max(...fixedValues.m)-Math.min(...fixedValues.m):0,
+   fixedValues.f.length?Math.max(...fixedValues.f)-Math.min(...fixedValues.f):0
+  ),
+  fixedCons,
+  shortCounts:{...short},
+  shortRange:{
+   m:range(P.players.filter(p=>p.sex==="m").map(p=>short[p.id]||0)),
+   f:range(P.players.filter(p=>p.sex==="f").map(p=>short[p.id]||0))
+  },
+  shortGap:Math.max(
+   ...["m","f"].map(sex=>{
+    const vals=P.players.filter(p=>p.sex===sex).map(p=>short[p.id]||0);
+    return vals.length?Math.max(...vals)-Math.min(...vals):0;
+   })
+  )
+ };
+}
+function cloneSchedule(matches){
+ return matches.map(m=>({
+   n:m.n,
+   restM:[...m.restM],
+   restF:[...m.restF],
+   courts:m.courts.map(c=>({
+     name:c.name,
+     a:{...c.a,ms:[...c.a.ms],fs:[...c.a.fs]},
+     b:{...c.b,ms:[...c.b.ms],fs:[...c.b.fs]}
+   }))
+ }));
+}
+function mutateSchedule(P,source,context={}){
+ const c=cloneSchedule(source);
+ const mi=Math.floor(Math.random()*c.length);
+ const match=c[mi];
+ if(P.four||P.fixed){
+   return makeCandidate(P,context);
+ }
+ const teams=match.courts.flatMap(x=>[x.a,x.b]);
+ const sex=Math.random()<.5?"ms":"fs";
+ const i=Math.floor(Math.random()*teams.length);
+ let j=Math.floor(Math.random()*teams.length);
+ if(j===i) j=(j+1)%teams.length;
+ const pi=Math.floor(Math.random()*teams[i][sex].length);
+ const pj=Math.floor(Math.random()*teams[j][sex].length);
+ [teams[i][sex][pi],teams[j][sex][pj]]=[teams[j][sex][pj],teams[i][sex][pi]];
+ if(Math.random()<.35 && teams.length===4){
+   const flat=sample(teams,teams.length);
+   match.courts=[
+     {name:"Aコート",a:flat[0],b:flat[1]},
+     {name:"Bコート",a:flat[2],b:flat[3]}
+   ];
+ }
+ return c;
+}
+async function optimize(P,context={}){
+ let totalTries=0;
+ async function search(localContext,duration){
+  let best=null,bestS=null,deadline=performance.now()+duration,elite=[];
+  while(performance.now()<deadline){
+   for(let k=0;k<70;k++){
+    totalTries++;
+    let c;
+    if(elite.length&&Math.random()<.6){
+     c=mutateSchedule(P,elite[Math.floor(Math.random()*elite.length)].matches,localContext);
+    }else{
+     c=makeCandidate(P,localContext);
+    }
+    if(!c)continue;
+    let s=score(P,c,localContext);if(!s)continue;
+    if(!bestS||s.penalty<bestS.penalty||(s.penalty===bestS.penalty&&Math.random()<.5)){best=c;bestS=s}
+    elite.push({matches:c,penalty:s.penalty});
+    elite.sort((a,b)=>a.penalty-b.penalty);
+    if(elite.length>10)elite.length=10;
+   }
+   await new Promise(r=>setTimeout(r,0));
+  }
+  return best?{matches:best,fair:bestS}:null;
+ }
+
+ let result=null;
+ if(P.fixed){
+  result=await search({...context,strictFixedNoConsecutive:true},3600);
+ }
+ if(!result){
+  result=await search({...context,strictFixedNoConsecutive:false},P.fixed?1800:4800);
+ }
+ if(!result)throw new Error("現在の人数と設定では組み合わせを作成できません。プレイヤー設定を確認してください。");
+ return {...result,tries:totalTries};
+}
+function validate(P){
+ if(!P.m||!P.f||!P.games)return "男性人数・女性人数・試合数をすべて入力してください。";
+ if(P.m<4)return "男性を4人以上入力してください。";if(P.f<4)return "女性を4人以上入力してください。";if(P.games<1)return "試合数を1以上入力してください。";
+ if(P.four&&!((P.m===8&&P.f===7)||(P.m===7&&P.f===8)))return "4対3開催は、男8人・女7人または男7人・女8人の場合のみ利用できます。";
+ if(P.four&&P.fixed)return "4対3開催と固定チーム開催は同時に使用できません。";
+ if(P.fixed===1&&(P.m<6||P.f<6))return "固定チーム1組で2コート開催するには、男性6人・女性6人以上必要です。";
+ return "";
+}
+function compact(list,prefix){
+ const numbers=list.length?list.map(p=>circ(p.n)).join(""):"－";
+ return `<span class="sex-prefix">${prefix}</span><span class="player-numbers">${numbers}</span>`;
+}
+function teamHTML(t){
+ const male=t.fixed?`<span class="sex-prefix">男</span><span class="player-numbers">－</span>`:compact(t.ms,"男");
+ const female=t.fixed?`<span class="sex-prefix">女</span><span class="player-numbers">－</span>`:compact(t.fs,"女");
+ return `<div class="team"><div class="teamname">${t.name}</div><div class="band male ${t.fixed?"empty":""}">${male}</div><div class="band female ${t.fixed?"empty":""}">${female}</div></div>`;
+}
+function render(data,P){
+ currentData=data;
+ const notice=$("#resultNotice");
+ if(resultNoticeText){
+  notice.innerHTML=resultNoticeText;
+  notice.classList.remove("hidden");
+ }else{
+  notice.innerHTML="";
+  notice.classList.add("hidden");
+ }
+ $("#badge").textContent=P.four?"4対3開催":P.fixed?`固定チーム${P.fixed}組`:(P.m>=8&&P.f>=8?"通常2コート":"通常1コート");
+ $("#jump").innerHTML=data.matches.map(m=>`<button data-id="match${m.n}">${m.n}</button>`).join("");$$("#jump button").forEach(b=>b.onclick=()=>$("#"+b.dataset.id).scrollIntoView({behavior:"smooth"}));
+ let previousRest=new Set();
+ $("#matches").innerHTML=data.matches.map(m=>{
+   const current=[...m.restM,...m.restF];
+   const consecutive=current.filter(p=>previousRest.has(p.id));
+   previousRest=new Set(current.map(p=>p.id));
+   const warn=consecutive.length?`<span class="rest-warning">⚠ 連続休憩：${consecutive.map(label).join("・")}</span>`:"";
+   return `<article class="match" id="match${m.n}"><h2>第${m.n}試合</h2>${m.courts.map(c=>`<div class="court"><p>${c.name}</p><div class="teams">${teamHTML(c.a)}${teamHTML(c.b)}</div></div>`).join("")}<div class="rest"><b>休憩</b>　${compact(m.restM,"男")} <span aria-hidden="true">／</span> ${compact(m.restF,"女")}${warn}</div></article>`;
+ }).join("");
+ let F=data.fair;$("#stars").textContent="★".repeat(F.stars)+"☆".repeat(5-F.stars);$("#fairLabel").textContent=F.label;
+ const formatOf=m=>{
+  const teams=m.courts.flatMap(c=>[c.a,c.b]);
+  const fixedCount=teams.filter(t=>t.fixed).length;
+  if(fixedCount)return `固定チーム${fixedCount}組`;
+  if(teams.some(t=>t.ms.length+t.fs.length===3))return "4対3";
+  return m.courts.length>=2?"通常2コート":"通常1コート";
+ };
+ const formatSegments=[];
+ data.matches.forEach((m,i)=>{
+  const mode=formatOf(m),n=i+1,last=formatSegments[formatSegments.length-1];
+  if(last&&last.mode===mode)last.end=n;else formatSegments.push({mode,start:n,end:n});
+ });
+ const formatHistory=formatSegments.map(x=>`${x.start===x.end?`第${x.start}試合`:`第${x.start}〜${x.end}試合`} ${x.mode}`).join(" ／ ");
+ const eventFixedCounts={},eventShortCounts={};
+ let hasFixedHistory=false,hasShortHistory=false;
+ data.matches.forEach(m=>m.courts.forEach(c=>{
+  const L=[...c.a.ms,...c.a.fs],R=[...c.b.ms,...c.b.fs];
+  if(c.a.fixed){hasFixedHistory=true;R.forEach(p=>eventFixedCounts[p.id]=(eventFixedCounts[p.id]||0)+1)}
+  if(c.b.fixed){hasFixedHistory=true;L.forEach(p=>eventFixedCounts[p.id]=(eventFixedCounts[p.id]||0)+1)}
+  if(L.length===3){hasShortHistory=true;L.forEach(p=>eventShortCounts[p.id]=(eventShortCounts[p.id]||0)+1)}
+  if(R.length===3){hasShortHistory=true;R.forEach(p=>eventShortCounts[p.id]=(eventShortCounts[p.id]||0)+1)}
+ }));
+ const allIds={m:{},f:{}},eventAppearances={},eventRests={};
+ data.matches.forEach(m=>{
+  m.courts.forEach(c=>[...c.a.ms,...c.a.fs,...c.b.ms,...c.b.fs].forEach(p=>{
+   allIds[p.sex][p.id]=p;
+   eventAppearances[p.id]=(eventAppearances[p.id]||0)+1;
+  }));
+  [...m.restM,...m.restF].forEach(p=>{
+   allIds[p.sex][p.id]=p;
+   eventRests[p.id]=(eventRests[p.id]||0)+1;
+  });
+ });
+ P.players.forEach(p=>allIds[p.sex][p.id]=p);
+ const playerRows=(sex,prefix)=>{
+  const ids=Object.keys(allIds[sex]).sort((a,b)=>Number(a.slice(1))-Number(b.slice(1)));
+  return ids.map(id=>`<tr><td>${prefix}${circ(Number(id.slice(1)))}</td><td>${eventAppearances[id]??0}</td><td>${eventRests[id]??0}</td>${hasFixedHistory?`<td>${eventFixedCounts[id]||0}</td>`:""}${hasShortHistory?`<td>${eventShortCounts[id]||0}</td>`:""}</tr>`).join("");
+ };
+ const playerHead=`<tr><th>参加者</th><th>出場</th><th>休憩</th>${hasFixedHistory?"<th>固定対戦</th>":""}${hasShortHistory?"<th>3人所属</th>":""}</tr>`;
+ $("#fairDetail").innerHTML=`<dl>
+ <dt>公平性スコア</dt><dd>${F.raw}</dd>
+ <dt>男女別の出場回数の最大差</dt><dd>${F.gap}回</dd>
+ <dt>連続休憩</dt><dd>${F.cons}か所</dd>
+ <dt>同じ4人チームの最大回数</dt><dd>${F.maxExactTeam}回</dd>
+ <dt>同じ対戦カードの最大回数</dt><dd>${F.maxExactCard}回</dd>
+ <dt>同じ味方ペアの最大回数</dt><dd>${F.maxMate}回</dd>
+ <dt>同じ対戦相手ペアの最大回数</dt><dd>${F.maxOpp}回</dd>
+ ${hasFixedHistory?`<dt>固定チーム対戦履歴</dt><dd>あり</dd>`:""}
+ ${hasShortHistory?`<dt>3人チーム所属回数の最大差</dt><dd>${(()=>{
+   const sexGap=sex=>{
+    const ids=Object.keys(allIds[sex]);
+    const values=ids.map(id=>eventShortCounts[id]||0);
+    return values.length?Math.max(...values)-Math.min(...values):0;
+   };
+   return Math.max(sexGap("m"),sexGap("f"));
+  })()}回</dd>`:""}
+ </dl>
+ <p class="format-history">開催方式：${formatHistory}</p>
+ ${F.cons?`<p class="warn">⚠ 連続休憩があります。</p>`:""}
+ <button id="moreFairBtn" class="more-toggle" type="button">▼ 詳細を見る</button>
+ <div id="deepFairDetail" class="deep-detail hidden">
+   <div class="report-section">
+     <h3>出場／休憩（男性）</h3>
+     <table class="report-table"><thead>${playerHead}</thead><tbody>${playerRows("m","男")}</tbody></table>
+   </div>
+   <div class="report-section">
+     <h3>出場／休憩（女性）</h3>
+     <table class="report-table"><thead>${playerHead}</thead><tbody>${playerRows("f","女")}</tbody></table>
+   </div>
+   <div class="report-section">
+     <h3>偏りチェック（最小／最大）</h3>
+     <table class="report-table">
+       <thead><tr><th>指標</th><th>最小</th><th>最大</th></tr></thead>
+       <tbody>
+         <tr><td>味方（男性）</td><td>${F.teammateRange.m.min}</td><td>${F.teammateRange.m.max}</td></tr>
+         <tr><td>対戦（男性）</td><td>${F.opponentRange.m.min}</td><td>${F.opponentRange.m.max}</td></tr>
+         <tr><td>味方（女性）</td><td>${F.teammateRange.f.min}</td><td>${F.teammateRange.f.max}</td></tr>
+         <tr><td>対戦（女性）</td><td>${F.opponentRange.f.min}</td><td>${F.opponentRange.f.max}</td></tr>
+       </tbody>
+     </table>
+     <div class="report-summary">
+       <span class="report-chip">男性の出場差：${(()=>{const v=Object.keys(allIds.m).map(id=>eventAppearances[id]||0);return v.length?Math.max(...v)-Math.min(...v):0})()}</span>
+       <span class="report-chip">女性の出場差：${(()=>{const v=Object.keys(allIds.f).map(id=>eventAppearances[id]||0);return v.length?Math.max(...v)-Math.min(...v):0})()}</span>
+       <span class="report-chip">${F.cons===0?"◎ 連続休憩なし":`⚠ 連続休憩 ${F.cons}か所`}</span>
+       ${hasFixedHistory?`<span class="report-chip">固定対戦履歴あり</span>
+       <span class="report-chip">${F.fixedCons===0?"◎ 固定チーム連続対戦なし":`⚠ 固定チーム連続対戦 ${F.fixedCons}か所`}</span>`:""}
+       ${hasShortHistory?`<span class="report-chip">3人チーム所属履歴あり</span>`:""}
+     </div>
+   </div>
+ </div>`;
+ const moreBtn=$("#moreFairBtn");
+ const deep=$("#deepFairDetail");
+ moreBtn.onclick=()=>{
+  const opening=deep.classList.contains("hidden");
+  deep.classList.toggle("hidden");
+  moreBtn.textContent=opening?"▲ 詳細を閉じる":"▼ 詳細を見る";
+ };
+}
+async function run(P,context={},prefix=[]){
+ $("#input").classList.add("hidden");$("#result").classList.add("hidden");$("#loading").classList.remove("hidden");
+ scrollTo(0,0);
+ // Safariでもローディング画面を先に描画してから、重い探索処理を開始する
+ await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));
+ try{
+  let d=await optimize(P,context);
+  if(prefix.length){
+   d.matches=d.matches.map((m,i)=>({...m,n:prefix.length+i+1}));
+   d.matches=[...prefix,...d.matches];
+  }
+  render(d,P);
+  lastResultMeta={previousZeroRest:[...d.fair.zeroRest],previousSignature:d.fair.signature};
+  $("#loading").classList.add("hidden");$("#result").classList.remove("hidden");scrollTo(0,0);
+ }catch(e){
+  $("#loading").classList.add("hidden");$("#result").classList.remove("hidden");
+  alert(e.message);
+ }
+}
+
+function openRecalc(){
+ if(!currentData||!lastPayload)return;
+ $("#addPanel").classList.add("hidden");
+ $("#recalcPanel").classList.remove("hidden");
+ $("#recalcStep1").classList.remove("hidden");
+ $("#recalcStep2").classList.add("hidden");
+ $("#recalcStart").innerHTML=currentData.matches.map((m,i)=>i===0?"":`<option value="${m.n}">第${m.n}試合から</option>`).join("");
+ $("#recalcStart").value=currentData.matches.length>1?2:1;
+}
+function recalcRow(p){
+ return `<div class="recalc-player" data-id="${p.id}" data-sex="${p.sex}" data-n="${p.n}">
+   <input class="recalc-active" type="checkbox" checked aria-label="${label(p)}を参加">
+   <strong>${label(p)}</strong>
+   <label class="check"><input class="recalc-no3" type="checkbox" ${p.no3?"checked":""}>3人チーム不可</label>
+   <label class="check"><input class="recalc-nofixed" type="checkbox" ${p.nofixed?"checked":""}>固定チーム対戦不可</label>
+ </div>`;
+}
+function showRecalcPlayers(){
+ const start=Number($("#recalcStart").value);
+ recalcDraft={start,players:lastPayload.players.map(p=>({...p})),joined:[]};
+ $("#recalcTitle").textContent=`第${start}試合から再計算`;
+ rebuildRecalcLists();
+ $("#recalcStep1").classList.add("hidden");
+ $("#recalcStep2").classList.remove("hidden");
+}
+function rebuildRecalcLists(){
+ $("#recalcMaleList").innerHTML=recalcDraft.players.filter(p=>p.sex==="m").map(recalcRow).join("");
+ $("#recalcFemaleList").innerHTML=recalcDraft.players.filter(p=>p.sex==="f").map(recalcRow).join("");
+ syncRecalcRows();
+}
+function syncRecalcRows(){
+ $$(".recalc-player").forEach(row=>{
+  const p=recalcDraft.players.find(x=>x.id===row.dataset.id);if(!p)return;
+  row.querySelector(".recalc-active").checked=p.active!==false;
+  row.querySelector(".recalc-active").onchange=e=>p.active=e.target.checked;
+  row.querySelector(".recalc-no3").onchange=e=>p.no3=e.target.checked;
+  row.querySelector(".recalc-nofixed").onchange=e=>p.nofixed=e.target.checked;
+ });
+}
+function addRecalcPlayer(){
+ const activeSex=$(".recalc-tab.active").dataset.sex;
+ const nums=recalcDraft.players.filter(p=>p.sex===activeSex).map(p=>p.n);
+ const n=(nums.length?Math.max(...nums):0)+1;
+ const p={id:activeSex+n,sex:activeSex,n,level:"normal",no3:false,nofixed:false,active:true};
+ recalcDraft.players.push(p);recalcDraft.joined.push(p.id);
+ rebuildRecalcLists();
+}
+async function executeRecalc(){
+ syncRecalcRows();
+ const active=recalcDraft.players.filter(p=>p.active!==false);
+ const m=active.filter(p=>p.sex==="m").length,f=active.filter(p=>p.sex==="f").length;
+ const remaining=lastPayload.games-recalcDraft.start+1;
+ let four=lastPayload.four;
+ const fourEligible=(m===8&&f===7)||(m===7&&f===8);
+
+ resultNoticeText="";
+ if(four&&!fourEligible){
+  four=false;
+  resultNoticeText=`<strong>現在の男女構成では4対3開催ができないため、通常開催に変更しました。</strong>
+  <small>4対3開催の対象：男性8人・女性7人／男性7人・女性8人</small>`;
+ }
+
+ const P={...lastPayload,m,f,games:remaining,players:active,four};
+ const err=validate(P);if(err){alert(err);return}
+ const prefix=currentData.matches.slice(0,recalcDraft.start-1);
+ const context={...extractHistory(prefix),priorityJoin:[...recalcDraft.joined]};
+ lastPayload={...lastPayload,m,f,players:active,four};
+ $("#recalcPanel").classList.add("hidden");
+ await run(P,context,prefix);
+}
+function openAdd(){
+ if(!currentData||!lastPayload)return;
+ $("#recalcPanel").classList.add("hidden");
+ $("#addPanel").classList.remove("hidden");
+ $("#addCount").value="";
+}
+async function executeAdd(){
+ resultNoticeText="";
+ const add=Number($("#addCount").value);
+ if(!add||add<1){alert("追加する試合数を1以上で入力してください。");return}
+ const prefix=[...currentData.matches];
+ const context=extractHistory(prefix);
+ const P={...lastPayload,games:add};
+ lastPayload={...lastPayload,games:lastPayload.games+add};
+ $("#addPanel").classList.add("hidden");
+ await run(P,context,prefix);
+}
+
+$("#create").onclick=async()=>{
+ resultNoticeText="";
+ let c=counts(),P={m:c.m,f:c.f,games:c.g,four:$("#four").checked,fixed:+$("#fixed").value,players:collectPlayers()},err=validate(P);
+ $("#msg").textContent=err;if(err)return;
+ lastPayload=P;lastResultMeta=null;run(P,{});
+};
+function returnToInput(){
+ $("#result").classList.add("hidden");
+ $("#input").classList.remove("hidden");
+ $("#playersWrap").classList.add("hidden");
+ $("#playersBtn").textContent="▶ プレイヤー設定";
+ $("#playerReset").classList.add("hidden");
+ document.querySelector("details").open=false;
+ scrollTo(0,0);
+}
+$("#back").onclick=returnToInput;
+$("#bottomBack").onclick=returnToInput;
+$("#playerReset").onclick=()=>{
+ if(!$$(".player").length) rebuildPlayers(false);
+ $$(".player").forEach(card=>{
+  card.querySelector(".no3").checked=false;
+  card.querySelector(".nofixed").checked=false;
+ });
+ $("#msg").textContent="プレイヤー設定をリセットしました。";
+ setTimeout(()=>{if($("#msg").textContent==="プレイヤー設定をリセットしました。")$("#msg").textContent=""},1800);
+};
+$("#again").onclick=()=>{resultNoticeText="";lastPayload&&run({...lastPayload,games:lastPayload.games},lastResultMeta||{})};
+$("#fairBtn").onclick=()=>$("#fairDetail").classList.toggle("hidden");
+$("#recalcButton").onclick=openRecalc;
+$("#addButton").onclick=openAdd;
+$("#closeRecalc1").onclick=()=>$("#recalcPanel").classList.add("hidden");
+$("#nextRecalc").onclick=showRecalcPlayers;
+$("#backRecalc").onclick=()=>{$("#recalcStep2").classList.add("hidden");$("#recalcStep1").classList.remove("hidden")};
+$("#executeRecalc").onclick=executeRecalc;
+$("#closeAdd").onclick=()=>$("#addPanel").classList.add("hidden");
+$("#executeAdd").onclick=executeAdd;
+$$(".recalc-tab").forEach(t=>t.onclick=()=>{
+ $$(".recalc-tab").forEach(x=>x.classList.remove("active"));t.classList.add("active");
+ const male=t.dataset.sex==="m";
+ $("#recalcMaleList").classList.toggle("hidden",!male);
+ $("#recalcFemaleList").classList.toggle("hidden",male);
+ $("#addRecalcPlayer").textContent=male?"＋ 男性を追加":"＋ 女性を追加";
+});
+$("#addRecalcPlayer").onclick=addRecalcPlayer;
+updateSpecial();
+</script>
+</body>
+</html>
