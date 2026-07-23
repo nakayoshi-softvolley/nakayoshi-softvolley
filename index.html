@@ -10,14 +10,8 @@
 <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
 <link rel="icon" type="image/png" sizes="32x32" href="favicon.png">
 <link rel="manifest" href="manifest.webmanifest">
-<!-- Soft Volleyball v1.0 RC19: one-court mode, input limits, validation and double-click prevention -->
+<!-- Soft Volleyball v1.0 RC13: fix 3-person-team membership gap across all event participants -->
 <title>なかよしソフトバレー</title>
-<meta name="description" content="チーム編成・試合組合せを公平に自動作成するWebアプリ">
-<meta property="og:title" content="なかよしソフトバレー">
-<meta property="og:description" content="チーム編成・試合組合せを公平に自動作成するWebアプリ">
-<meta property="og:type" content="website">
-<meta property="og:url" content="https://nakayoshi-softvolley.github.io/nakayoshi-softvolley/">
-<meta property="og:image" content="https://nakayoshi-softvolley.github.io/nakayoshi-softvolley/icon-512.png">
 <style>
 
 :root{
@@ -135,26 +129,6 @@ select{padding:9px;border:1px solid var(--line);border-radius:9px;background:whi
 .report-chip{padding:6px 9px;border-radius:999px;background:#f0f2f5;color:var(--text);font-size:.85rem}
 
 
-.rest-audit-toggle{width:100%;margin-top:14px;padding:8px 0 2px;border:0;border-top:1px dashed #d8dee7;background:transparent;color:#98a4b3;font-size:.78rem;font-weight:700;text-align:left;cursor:pointer}
-.rest-audit{padding-top:8px}
-.rest-audit-tabs{display:grid;grid-template-columns:1fr 1fr;gap:5px;margin:0 0 7px}
-.rest-audit-tab{border:1px solid #d8dee7;border-radius:7px;background:#f7f8fa;color:#7b8898;padding:6px;font-size:.78rem;font-weight:700}
-.rest-audit-tab[data-sex="m"].active{background:var(--male);color:var(--text);border-color:#cbdbe8}
-.rest-audit-tab[data-sex="f"].active{background:var(--female);color:var(--text);border-color:#e4cfd6}
-.rest-audit-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch}
-.rest-audit-table{width:max-content;min-width:100%;border-collapse:collapse;table-layout:fixed;font-size:.76rem;background:#fff}
-.rest-audit-table th,.rest-audit-table td{border:1px solid #d9dfe7;height:27px;min-width:28px;padding:1px 3px;text-align:center;white-space:nowrap}
-.rest-audit-table th{background:#f4f6f8;color:#687789;font-weight:700}
-.rest-audit-table .rest-audit-corner{min-width:82px;padding-inline:5px;font-size:.69rem;text-align:left}
-.rest-audit-table .rest-player{min-width:30px;background:#fafbfc;font-size:.9rem;font-weight:500}
-.rest-mark{display:inline-grid;place-items:center;min-width:18px;height:18px;padding:0 4px;border-radius:5px;background:#eef1f5;color:#354253;font-size:.72rem;font-weight:800;line-height:1}
-.rest-pairs{margin-top:7px;color:#788596;font-size:.73rem;line-height:1.75}
-.rest-pairs-title{margin-right:5px;color:#909baa;font-weight:700}
-.rest-pair{display:inline-block;margin-right:9px;white-space:nowrap}
-.rest-pair.repeat{color:#4d5d70;font-weight:800}
-.rest-pairs-empty{color:#a0aab6}
-
-
 .restore-overlay{position:fixed;inset:0;z-index:9999;background:rgba(28,39,55,.48);display:flex;align-items:center;justify-content:center;padding:24px}.restore-card{width:min(420px,100%);background:#fff;border-radius:22px;padding:26px 22px;box-shadow:0 18px 50px rgba(20,34,52,.24);text-align:center}.restore-card h2{margin:0 0 10px;font-size:1.25rem}.restore-card p{margin:0 0 20px;color:#65758a;line-height:1.65}.restore-actions{display:grid;gap:10px}.save-status{font-size:.78rem;color:#8a99aa;text-align:right;margin:-2px 2px 8px}.hidden{display:none!important}
 @media(max-width:390px){.app{padding-inline:13px}.hero{margin-inline:-13px}.panel{padding:22px 16px}.band{margin:6px;padding-inline:3px;font-size:.95rem}}
 
@@ -176,15 +150,14 @@ select{padding:9px;border:1px solid var(--line);border-radius:9px;background:whi
 <section id="input">
 <div class="hero"><h1><span>なかよし</span><span class="brand-smile" aria-hidden="true"><svg viewBox="0 0 24 24" role="img" focusable="false"><circle cx="12" cy="12" r="9.2"></circle><path d="M9.2 10.2h.01"></path><path d="M14.8 10.2h.01"></path><path d="M8.6 14.1c1 .95 2.15 1.43 3.4 1.43s2.4-.48 3.4-1.43"></path></svg></span><span>ソフトバレー</span></h1><p>チーム編成・試合組合せを公平に作成</p></div>
 <div class="panel">
-<div class="row"><label for="mc">男性</label><input id="mc" type="number" inputmode="numeric" min="4" max="20" placeholder="人数"></div>
-<div class="row"><label for="fc">女性</label><input id="fc" type="number" inputmode="numeric" min="4" max="20" placeholder="人数"></div>
-<div class="row"><label for="gc">試合数</label><input id="gc" type="number" inputmode="numeric" min="1" max="20" placeholder="試合数"></div>
+<div class="row"><label for="mc">男性</label><input id="mc" type="number" inputmode="numeric" min="4" max="30" placeholder="人数"></div>
+<div class="row"><label for="fc">女性</label><input id="fc" type="number" inputmode="numeric" min="4" max="30" placeholder="人数"></div>
+<div class="row"><label for="gc">試合数</label><input id="gc" type="number" inputmode="numeric" min="1" max="30" placeholder="試合数"></div>
 
 <details>
 <summary>詳細設定</summary>
 <div class="section">
 <h2>開催設定</h2>
-<label class="setting"><span><b>1コートのみ使用</b><small>参加人数が多い場合も1コートで開催します</small></span><input id="oneCourt" type="checkbox"></label>
 <label class="setting"><span><b>4対3開催</b><small id="fourNote">男8・女7または男7・女8の場合のみ</small></span><input id="four" type="checkbox"></label>
 <label class="setting"><span><b>固定チーム</b><small>最大2チーム・毎試合出場</small></span>
 <select id="fixed"><option value="0">なし</option><option value="1">1チーム</option><option value="2">2チーム</option></select></label>
@@ -302,12 +275,10 @@ const label=p=>(p.sex==="m"?"男":"女")+circ(p.n);
 const key=(a,b)=>[a,b].sort().join("|");
 function counts(){return {m:+$("#mc").value,f:+$("#fc").value,g:+$("#gc").value}}
 function updateSpecial(){
- const {m,f}=counts(), oneCourt=$("#oneCourt"), four=$("#four"), fixed=$("#fixed"), valid=(m===8&&f===7)||(m===7&&f===8);
- if(oneCourt.checked){four.checked=false;fixed.value="0"}
- four.disabled=oneCourt.checked||!valid||fixed.value!=="0";
- if(four.disabled)four.checked=false;
- fixed.disabled=oneCourt.checked||four.checked;
- $("#fourNote").textContent=oneCourt.checked?"1コートのみ使用中は選択できません":valid?(fixed.value!=="0"?"固定チーム開催中は選択できません":"この人数では利用できます"):"男8・女7または男7・女8の場合のみ";
+ const {m,f}=counts(), four=$("#four"), fixed=$("#fixed"), valid=(m===8&&f===7)||(m===7&&f===8);
+ four.disabled=!valid||fixed.value!=="0"; if(four.disabled) four.checked=false;
+ fixed.disabled=four.checked;
+ $("#fourNote").textContent=valid?(fixed.value!=="0"?"固定チーム開催中は選択できません":"この人数では利用できます"):"男8・女7または男7・女8の場合のみ";
 }
 ["#mc","#fc","#gc"].forEach(s=>{
  const el=$(s);
@@ -319,7 +290,7 @@ function updateSpecial(){
  el.addEventListener("focus",selectAll);
  el.addEventListener("click",selectAll);
 });
-$("#oneCourt").addEventListener("change",updateSpecial);$("#four").addEventListener("change",updateSpecial);$("#fixed").addEventListener("change",updateSpecial);
+$("#four").addEventListener("change",updateSpecial);$("#fixed").addEventListener("change",updateSpecial);
 
 function playerCard(sex,n){
  const k=sex+n,p=sex==="m"?"男":"女";
@@ -373,19 +344,6 @@ function collectPlayers(){
 }
 function sample(a,n){let b=[...a];for(let i=b.length-1;i>0;i--){let j=Math.floor(Math.random()*(i+1));[b[i],b[j]]=[b[j],b[i]]}return b.slice(0,n)}
 function team(name,ms=[],fs=[],fixed=false){return {name,ms,fs,fixed}}
-function normalizeMatchLayout(match){
- const labels=match.courts.length>=2?[["A","B"],["C","D"]]:[["A","B"]];
- match.courts.forEach((court,i)=>{
-  court.name=i===0?"1コート":"2コート";
-  court.a.name=labels[i][0]+(court.a.fixed?"（固定）":"");
-  court.b.name=labels[i][1]+(court.b.fixed?"（固定）":"");
- });
- return match;
-}
-function arrangePairings(pairings){
- const ordered=sample(pairings,pairings.length).map(pair=>Math.random()<.5?[pair[1],pair[0]]:pair);
- return ordered.map((pair,i)=>({name:i===0?"1コート":"2コート",a:pair[0],b:pair[1]}));
-}
 
 function makeRestPlan(players,games,activeCount,context={}){
  const restPerRound=players.length-activeCount;
@@ -523,7 +481,7 @@ function makeCandidate(P,context={}){
  }
  if(!P.four){
   if(P.fixed===0){
-   const tc=P.oneCourt?2:((males.length>=8&&females.length>=8)?4:2);
+   const tc=(males.length>=8&&females.length>=8)?4:2;
    activeM=tc*2;activeF=tc*2;
   }else if(P.fixed===1){
    activeM=6;activeF=6;
@@ -538,30 +496,28 @@ function makeCandidate(P,context={}){
   if(P.four){
    let shortM=shortPlanM[r],shortF=shortPlanF[r],rm=males.filter(p=>!shortM.some(x=>x.id===p.id)),rf=females.filter(p=>!shortF.some(x=>x.id===p.id)),ts=[];
    rm=sample(rm,rm.length);rf=sample(rf,rf.length);for(let i=0;i<3;i++)ts.push(team(String.fromCharCode(65+i),rm.slice(i*2,i*2+2),rf.slice(i*2,i*2+2)));
-   ts.push(team("D",shortM,shortF));ts=sample(ts,4);courts=[{name:"1コート",a:ts[0],b:ts[1]},{name:"2コート",a:ts[2],b:ts[3]}];
+   ts.push(team("D",shortM,shortF));ts=sample(ts,4);courts=[{name:"Aコート",a:ts[0],b:ts[1]},{name:"Bコート",a:ts[2],b:ts[3]}];
   } else if(P.fixed===0){
-   let tc=P.oneCourt?2:((males.length>=8&&females.length>=8)?4:2);
+   let tc=(males.length>=8&&females.length>=8)?4:2;
    restM=restPlanM[r];restF=restPlanF[r];
    let am=sample(males.filter(p=>!restM.some(x=>x.id===p.id)),activeM);
    let af=sample(females.filter(p=>!restF.some(x=>x.id===p.id)),activeF);
    let ts=[];for(let i=0;i<tc;i++)ts.push(team(String.fromCharCode(65+i),am.slice(i*2,i*2+2),af.slice(i*2,i*2+2)));ts=sample(ts,tc);
-   courts=tc===2?[{name:"1コート",a:ts[0],b:ts[1]}]:[{name:"1コート",a:ts[0],b:ts[1]},{name:"2コート",a:ts[2],b:ts[3]}];
+   courts=tc===2?[{name:"Aコート",a:ts[0],b:ts[1]}]:[{name:"Aコート",a:ts[0],b:ts[1]},{name:"Bコート",a:ts[2],b:ts[3]}];
   } else if(P.fixed===1){
    restM=restPlanM[r];restF=restPlanF[r];
    let am=sample(males.filter(p=>!restM.some(x=>x.id===p.id)),activeM);
    let af=sample(females.filter(p=>!restF.some(x=>x.id===p.id)),activeF);
    let ts=[];for(let i=0;i<3;i++)ts.push(team(String.fromCharCode(65+i),am.slice(i*2,i*2+2),af.slice(i*2,i*2+2)));
-   let x=Math.floor(Math.random()*3),opp=ts[x],rem=sample(ts.filter((_,i)=>i!==x),2);
-   courts=arrangePairings([[opp,team("固定",[],[],true)],[rem[0],rem[1]]]);
+   let x=Math.floor(Math.random()*3),opp=ts[x],rem=sample(ts.filter((_,i)=>i!==x),2);courts=[{name:"Aコート",a:opp,b:team("D（固定）",[],[],true)},{name:"Bコート",a:rem[0],b:rem[1]}];
   } else {
    restM=restPlanM[r];restF=restPlanF[r];
    let am=sample(males.filter(p=>!restM.some(x=>x.id===p.id)),activeM);
    let af=sample(females.filter(p=>!restF.some(x=>x.id===p.id)),activeF);
-   let A=team("A",am.slice(0,2),af.slice(0,2)),B=team("B",am.slice(2),af.slice(2)),C=team("固定1",[],[],true),D=team("固定2",[],[],true),pat=Math.floor(Math.random()*3);
-   const pairings=pat===0?[[A,C],[B,D]]:pat===1?[[A,B],[C,D]]:[[A,D],[B,C]];
-   courts=arrangePairings(pairings);
+   let A=team("A",am.slice(0,2),af.slice(0,2)),B=team("B",am.slice(2),af.slice(2)),C=team("C（固定）",[],[],true),D=team("D（固定）",[],[],true),pat=Math.floor(Math.random()*3);
+   courts=pat===0?[{name:"Aコート",a:A,b:C},{name:"Bコート",a:B,b:D}]:pat===1?[{name:"Aコート",a:A,b:B},{name:"Bコート",a:C,b:D}]:[{name:"Aコート",a:A,b:D},{name:"Bコート",a:B,b:C}];
   }
-  matches.push(normalizeMatchLayout({n:r+1,courts,restM,restF}));
+  matches.push({n:r+1,courts,restM,restF});
  }
  return matches;
 }
@@ -573,13 +529,8 @@ function scheduleSignature(matches){
  }).sort().join("||")).join("###");
 }
 function extractHistory(matches){
- const mateHistory={},oppHistory={},restPairHistory={},exactTeamsHistory={},exactCardsHistory={},fixedHistory={},shortHistory={};
+ const mateHistory={},oppHistory={},exactTeamsHistory={},exactCardsHistory={},fixedHistory={},shortHistory={};
  for(const M of matches){
-  const resting=[...M.restM,...M.restF];
-  for(let i=0;i<resting.length;i++)for(let j=i+1;j<resting.length;j++){
-   const k=key(resting[i].id,resting[j].id);
-   restPairHistory[k]=(restPairHistory[k]||0)+1;
-  }
   for(const c of M.courts){
    const L=[...c.a.ms,...c.a.fs],R=[...c.b.ms,...c.b.fs];
    for(let i=0;i<L.length;i++)for(let j=i+1;j<L.length;j++)mateHistory[key(L[i].id,L[j].id)]=(mateHistory[key(L[i].id,L[j].id)]||0)+1;
@@ -607,32 +558,18 @@ function extractHistory(matches){
    if(R.length===3)R.forEach(p=>initialShort.push(p.id));
   }
  }
- return {mateHistory,oppHistory,restPairHistory,exactTeamsHistory,exactCardsHistory,fixedHistory,shortHistory,initialRest,initialFixed,initialShort};
+ return {mateHistory,oppHistory,exactTeamsHistory,exactCardsHistory,fixedHistory,shortHistory,initialRest,initialFixed,initialShort};
 }
 function score(P,matches,context={}){
- const initialMate={...(context.mateHistory||{})},initialOpp={...(context.oppHistory||{})};
- const priorityJoin=new Set(context.priorityJoin||[]),joinMateSeen=new Set,joinOppSeen=new Set;
- let app={},seq={},mate={...initialMate},opp={...initialOpp},fixed={...(context.fixedHistory||{})},fseq={},short={},sseq={},shortOpp={};P.players.forEach(p=>{app[p.id]=0;seq[p.id]=[];fixed[p.id]=fixed[p.id]||0;fseq[p.id]=[];short[p.id]=(context.shortHistory&&context.shortHistory[p.id])||0;sseq[p.id]=[];shortOpp[p.id]=0});
+ let app={},seq={},mate={...(context.mateHistory||{})},opp={...(context.oppHistory||{})},fixed={...(context.fixedHistory||{})},fseq={},short={},sseq={},shortOpp={};P.players.forEach(p=>{app[p.id]=0;seq[p.id]=[];fixed[p.id]=fixed[p.id]||0;fseq[p.id]=[];short[p.id]=(context.shortHistory&&context.shortHistory[p.id])||0;sseq[p.id]=[];shortOpp[p.id]=0});
  let penalty=0;
  for(const M of matches){
   let active=new Set,facing=new Set,shortSet=new Set,shortOppSet=new Set;
   for(const c of M.courts){
    let L=[...c.a.ms,...c.a.fs],R=[...c.b.ms,...c.b.fs];L.forEach(p=>active.add(p.id));R.forEach(p=>active.add(p.id));
-   for(let i=0;i<L.length;i++)for(let j=i+1;j<L.length;j++){
-    const k=key(L[i].id,L[j].id);
-    mate[k]=(mate[k]||0)+1;
-    if(priorityJoin.has(L[i].id)||priorityJoin.has(L[j].id))joinMateSeen.add(k);
-   }
-   for(let i=0;i<R.length;i++)for(let j=i+1;j<R.length;j++){
-    const k=key(R[i].id,R[j].id);
-    mate[k]=(mate[k]||0)+1;
-    if(priorityJoin.has(R[i].id)||priorityJoin.has(R[j].id))joinMateSeen.add(k);
-   }
-   L.forEach(a=>R.forEach(b=>{
-    const k=key(a.id,b.id);
-    opp[k]=(opp[k]||0)+1;
-    if(priorityJoin.has(a.id)||priorityJoin.has(b.id))joinOppSeen.add(k);
-   }));
+   for(let i=0;i<L.length;i++)for(let j=i+1;j<L.length;j++)mate[key(L[i].id,L[j].id)]=(mate[key(L[i].id,L[j].id)]||0)+1;
+   for(let i=0;i<R.length;i++)for(let j=i+1;j<R.length;j++)mate[key(R[i].id,R[j].id)]=(mate[key(R[i].id,R[j].id)]||0)+1;
+   L.forEach(a=>R.forEach(b=>opp[key(a.id,b.id)]=(opp[key(a.id,b.id)]||0)+1));
    if(c.a.fixed)R.forEach(p=>facing.add(p.id));if(c.b.fixed)L.forEach(p=>facing.add(p.id));
    if(P.four){if(L.length===3){L.forEach(p=>shortSet.add(p.id));R.forEach(p=>shortOppSet.add(p.id))}if(R.length===3){R.forEach(p=>shortSet.add(p.id));L.forEach(p=>shortOppSet.add(p.id))}}
   }
@@ -663,30 +600,6 @@ function score(P,matches,context={}){
  const mateCounts=Object.values(mate),oppCounts=Object.values(opp);
  mateCounts.forEach(c=>{ if(c>1) penalty+=(c-1)**2*18; });
  oppCounts.forEach(c=>{ if(c>1) penalty+=(c-1)**2*7; });
- // 同時休憩ペアの重複は、休憩回数・連続休憩・休憩間隔を守った後の調整にだけ使う。
- // 合計加点を55点以内に制限し、休憩間隔の評価（1段階70点）を逆転させない。
- const restPairs={...(context.restPairHistory||{})};
- for(const M of matches){
-  const resting=[...M.restM,...M.restF];
-  for(let i=0;i<resting.length;i++)for(let j=i+1;j<resting.length;j++){
-   if(resting[i].sex!==resting[j].sex)continue;
-   const k=key(resting[i].id,resting[j].id);
-   restPairs[k]=(restPairs[k]||0)+1;
-  }
- }
- let restPairPenalty=0;
- Object.values(restPairs).forEach(c=>{
-  if(c>1)restPairPenalty+=(c-1)**2*10;
- });
- penalty+=Math.min(55,restPairPenalty);
- // 途中参加後は、参加者との「開催日内で初めて」の組合せを軽いタイブレークとして優先する。
- // 出場・休憩や連続休憩の重みより十分小さくし、公平性を崩さない。
- if(priorityJoin.size){
-  let freshMate=0,freshOpp=0;
-  joinMateSeen.forEach(k=>{if(!initialMate[k])freshMate++});
-  joinOppSeen.forEach(k=>{if(!initialOpp[k])freshOpp++});
-  penalty-=freshMate*12+freshOpp*4;
- }
  const maxMate=Math.max(0,...mateCounts),maxOpp=Math.max(0,...oppCounts);
 
  // Exact 4-person team repetition and exact team-vs-team card repetition.
@@ -826,11 +739,10 @@ function mutateSchedule(P,source,context={}){
  if(Math.random()<.35 && teams.length===4){
    const flat=sample(teams,teams.length);
    match.courts=[
-     {name:"1コート",a:flat[0],b:flat[1]},
-     {name:"2コート",a:flat[2],b:flat[3]}
+     {name:"Aコート",a:flat[0],b:flat[1]},
+     {name:"Bコート",a:flat[2],b:flat[3]}
    ];
  }
- c.forEach(normalizeMatchLayout);
  return c;
 }
 async function optimize(P,context={}){
@@ -870,15 +782,8 @@ async function optimize(P,context={}){
 }
 function validate(P){
  if(!P.m||!P.f||!P.games)return "男性人数・女性人数・試合数をすべて入力してください。";
- if(P.m<4)return "男性人数は4～20人で入力してください。";
- if(P.f<4)return "女性人数は4～20人で入力してください。";
- if(P.games<1)return "試合数は1～20試合で入力してください。";
- if(P.m>20)return "男性人数は20人以内で入力してください。";
- if(P.f>20)return "女性人数は20人以内で入力してください。";
- if(P.games>20)return "試合数は20試合以内で入力してください。";
- if(P.oneCourt&&P.four)return "「1コートのみ使用」と「4対3開催」は同時に選択できません。";
- if(P.oneCourt&&P.fixed)return "「1コートのみ使用」と「固定チーム」は同時に選択できません。";
- if(P.four&&!((P.m===8&&P.f===7)||(P.m===7&&P.f===8)))return "4対3開催は、男性8人・女性7人または男性7人・女性8人の場合のみ利用できます。";
+ if(P.m<4)return "男性を4人以上入力してください。";if(P.f<4)return "女性を4人以上入力してください。";if(P.games<1)return "試合数を1以上入力してください。";
+ if(P.four&&!((P.m===8&&P.f===7)||(P.m===7&&P.f===8)))return "4対3開催は、男8人・女7人または男7人・女8人の場合のみ利用できます。";
  if(P.four&&P.fixed)return "4対3開催と固定チーム開催は同時に使用できません。";
  if(P.fixed===1&&(P.m<6||P.f<6))return "固定チーム1組で2コート開催するには、男性6人・女性6人以上必要です。";
  return "";
@@ -902,7 +807,7 @@ function render(data,P){
   notice.innerHTML="";
   notice.classList.add("hidden");
  }
- $("#badge").textContent=P.oneCourt?"1コートのみ":P.four?"4対3開催":P.fixed?`固定チーム${P.fixed}組`:(P.m>=8&&P.f>=8?"通常2コート":"通常1コート");
+ $("#badge").textContent=P.four?"4対3開催":P.fixed?`固定チーム${P.fixed}組`:(P.m>=8&&P.f>=8?"通常2コート":"通常1コート");
  $("#jump").innerHTML=data.matches.map(m=>`<button data-id="match${m.n}">${m.n}</button>`).join("");$$("#jump button").forEach(b=>b.onclick=()=>$("#"+b.dataset.id).scrollIntoView({behavior:"smooth"}));
  let previousRest=new Set();
  $("#matches").innerHTML=data.matches.map(m=>{
@@ -952,39 +857,6 @@ function render(data,P){
   return ids.map(id=>`<tr><td>${prefix}${circ(Number(id.slice(1)))}</td><td>${eventAppearances[id]??0}</td><td>${eventRests[id]??0}</td>${hasFixedHistory?`<td>${eventFixedCounts[id]||0}</td>`:""}${hasShortHistory?`<td>${eventShortCounts[id]||0}</td>`:""}</tr>`).join("");
  };
  const playerHead=`<tr><th>参加者</th><th>出場</th><th>休憩</th>${hasFixedHistory?"<th>固定対戦</th>":""}${hasShortHistory?"<th>3人所属</th>":""}</tr>`;
- const keycap=n=>String(n).split("").map(d=>`${d}\uFE0F\u20E3`).join("");
- const restAuditData=sex=>{
-  const ids=Object.keys(allIds[sex]).sort((a,b)=>Number(a.slice(1))-Number(b.slice(1)));
-  const occurrence=Object.fromEntries(ids.map(id=>[id,0]));
-  const rows=Object.fromEntries(ids.map(id=>[id,[]]));
-  const pairCounts={};
-  data.matches.forEach(match=>{
-   const resting=(sex==="m"?match.restM:match.restF).map(p=>p.id).sort((a,b)=>Number(a.slice(1))-Number(b.slice(1)));
-   const restingSet=new Set(resting);
-   ids.forEach(id=>{
-    if(restingSet.has(id)){
-     occurrence[id]=(occurrence[id]||0)+1;
-     rows[id].push(occurrence[id]);
-    }else rows[id].push(0);
-   });
-   for(let i=0;i<resting.length;i++)for(let j=i+1;j<resting.length;j++){
-    const key=`${resting[i]}|${resting[j]}`;
-    pairCounts[key]=(pairCounts[key]||0)+1;
-   }
-  });
-  const pairs=Object.entries(pairCounts).map(([key,count])=>{
-   const [a,b]=key.split("|");
-   return {a,b,count,an:Number(a.slice(1)),bn:Number(b.slice(1))};
-  }).sort((x,y)=>y.count-x.count||x.an-y.an||x.bn-y.bn);
-  return {ids,rows,pairs};
- };
- const restAuditHtml=sex=>{
-  const title=sex==="m"?"男性":"女性",audit=restAuditData(sex);
-  const head=data.matches.map((_,i)=>`<th>${keycap(i+1)}</th>`).join("");
-  const body=audit.ids.map(id=>`<tr><th class="rest-player">${circ(Number(id.slice(1)))}</th>${audit.rows[id].map(n=>`<td>${n?`<span class="rest-mark">${n}</span>`:""}</td>`).join("")}</tr>`).join("");
-  const pairs=audit.pairs.length?audit.pairs.map(x=>`<span class="rest-pair ${x.count>=2?"repeat":""}">${circ(x.an)}＋${circ(x.bn)}：${x.count}</span>`).join(""):`<span class="rest-pairs-empty">組み合わせなし</span>`;
-  return `<div class="rest-audit-scroll"><table class="rest-audit-table"><thead><tr><th class="rest-audit-corner">${title}\\試合数</th>${head}</tr></thead><tbody>${body}</tbody></table></div><div class="rest-pairs"><span class="rest-pairs-title">同時休憩</span>${pairs}</div>`;
- };
  $("#fairDetail").innerHTML=`<dl>
  <dt>公平性スコア</dt><dd>${F.raw}</dd>
  <dt>男女別の出場回数の最大差</dt><dd>${F.gap}回</dd>
@@ -1035,14 +907,6 @@ function render(data,P){
        ${hasShortHistory?`<span class="report-chip">3人チーム所属履歴あり</span>`:""}
      </div>
    </div>
-   <button id="restAuditBtn" class="rest-audit-toggle" type="button">▶ 休憩検証表</button>
-   <div id="restAudit" class="rest-audit hidden">
-     <div class="rest-audit-tabs">
-       <button class="rest-audit-tab active" data-sex="m" type="button">男性</button>
-       <button class="rest-audit-tab" data-sex="f" type="button">女性</button>
-     </div>
-     <div id="restAuditBody">${restAuditHtml("m")}</div>
-   </div>
  </div>`;
  const moreBtn=$("#moreFairBtn");
  const deep=$("#deepFairDetail");
@@ -1051,16 +915,6 @@ function render(data,P){
   deep.classList.toggle("hidden");
   moreBtn.textContent=opening?"▲ 詳細を閉じる":"▼ 詳細を見る";
  };
- const restAuditBtn=$("#restAuditBtn"),restAudit=$("#restAudit"),restAuditBody=$("#restAuditBody");
- restAuditBtn.onclick=()=>{
-  const opening=restAudit.classList.contains("hidden");
-  restAudit.classList.toggle("hidden");
-  restAuditBtn.textContent=opening?"▼ 休憩検証表":"▶ 休憩検証表";
- };
- document.querySelectorAll(".rest-audit-tab").forEach(tab=>tab.onclick=()=>{
-  document.querySelectorAll(".rest-audit-tab").forEach(x=>x.classList.toggle("active",x===tab));
-  restAuditBody.innerHTML=restAuditHtml(tab.dataset.sex);
- });
 }
 async function run(P,context={},prefix=[]){
  $("#input").classList.add("hidden");$("#result").classList.add("hidden");$("#loading").classList.remove("hidden");
@@ -1172,18 +1026,9 @@ async function executeAdd(){
 
 $("#create").onclick=async()=>{
  resultNoticeText="";
- const button=$("#create");
- if(button.disabled)return;
- button.disabled=true;
- button.textContent="作成中…";
- try{
-  let c=counts(),P={m:c.m,f:c.f,games:c.g,oneCourt:$("#oneCourt").checked,four:$("#four").checked,fixed:+$("#fixed").value,players:collectPlayers()},err=validate(P);
-  $("#msg").textContent=err;if(err)return;
-  lastPayload=P;lastResultMeta=null;await run(P,{});
- }finally{
-  button.disabled=false;
-  button.textContent="組み合わせ作成";
- }
+ let c=counts(),P={m:c.m,f:c.f,games:c.g,four:$("#four").checked,fixed:+$("#fixed").value,players:collectPlayers()},err=validate(P);
+ $("#msg").textContent=err;if(err)return;
+ lastPayload=P;lastResultMeta=null;run(P,{});
 };
 function returnToInput(){
  $("#result").classList.add("hidden");
